@@ -16,7 +16,6 @@ exports.get = function() {
     }
 
     var params = {
-        content: content,
         googleUA: googleUA
     };
 

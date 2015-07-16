@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+  <config>
+    <input type="TextLine" name="googleUA">
+      <label>Google Analytics UA</label>
+      <occurrences minimum="0" maximum="1"/>
+    </input>
+  </config>
+</site>

@@ -2,25 +2,28 @@ var portal = require('/lib/xp/portal');
 var thymeleaf = require('/lib/xp/thymeleaf');
 
 exports.get = function() {
-    var content = portal.getContent();
     var view = resolve('traffic-report.html');
     var siteConfigs = portal.getSite().siteConfigs;
-    var googleUA;
-
-    log.info("Showing content of Google Analytics app");
+    var clientId;
 
     if (siteConfigs["com.enonic.app.ga"]) {
-        googleUA = siteConfigs["com.enonic.app.ga"].googleUA;
+        clientId = siteConfigs["com.enonic.app.ga"].clientId;
 
-        log.info("GA key is: " + googleUA);
+        log.info("GA Client Id is: " + clientId);
     }
 
     var params = {
-        googleUA: googleUA
+        clientId: clientId
     };
 
     return {
         contentType: 'text/html',
-        body: thymeleaf.render(view, params)
+        body: thymeleaf.render(view, params),
+        pageContributions: {
+            bodyEnd: [
+                '<script src="' + portal.assetUrl({path: 'js/google-analytics.js'}) + '" type="text/javascript"></script>',
+                '<script src="https://apis.google.com/js/client.js?onload=authorize"></script>'
+            ]
+        }
     };
 };

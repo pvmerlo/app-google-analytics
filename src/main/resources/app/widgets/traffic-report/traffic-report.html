@@ -1,9 +1,15 @@
 <div>
-    <h2>Google Analytics</h2>
-    <div data-th-if="${googleUA}" data-th-remove="tag">
-        <h3>Your tracking key is: <span data-th-text="${googleUA}"></span></h3>
+    <h2>Hello from Google Analytics</h2>
+    <div data-th-if="${clientId}" data-th-remove="tag">
+        <h3>Google Analytics Client ID is: <span data-th-text="${clientId}"></span></h3>
+
+        <button id="auth-button" hidden="true">Authorize</button>
+        <input id="ga-client" type="hidden" data-th-value="${clientId}" />
+
+        <h1>Analytics Data:</h1>
+        <textarea cols="80" rows="20" id="query-output"></textarea>
     </div>
-    <div data-th-if="${!googleUA}" data-th-remove="tag">
-        <h3>You must define tracking key under site settings</h3>
+    <div data-th-if="${!clientId}" data-th-remove="tag">
+        <h3>You must define Google Analytics Client ID under site settings</h3>
     </div>
 </div>

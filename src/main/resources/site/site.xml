@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
   <config>
-    <input type="TextLine" name="clientId">
-      <label>Client Id</label>
+    <input type="TextLine" name="serviceAccount">
+      <label>Service Account Email</label>
+      <occurrences minimum="0" maximum="1"/>
+    </input>
+    <input type="BinaryUploader" name="p12Key">
+      <label>P12 key</label>
       <occurrences minimum="0" maximum="1"/>
     </input>
   </config>

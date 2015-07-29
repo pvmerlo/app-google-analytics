@@ -5,7 +5,7 @@
       <label>Service Account Email</label>
       <occurrences minimum="0" maximum="1"/>
     </input>
-    <input type="BinaryUploader" name="p12Key">
+    <input type="FileUploader" name="p12Key">
       <label>P12 key</label>
       <occurrences minimum="0" maximum="1"/>
     </input>

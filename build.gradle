@@ -35,6 +35,8 @@ dependencies {
     include 'com.enonic.xp:lib-xslt:6.0.0-SNAPSHOT'
     include 'com.enonic.xp:lib-mustache:6.0.0-SNAPSHOT'
     include 'com.enonic.xp:lib-i18n:6.0.0-SNAPSHOT'
+    include 'com.google.apis:google-api-services-analytics:v3-rev116-1.20.0'
+    include 'org.codehaus.jackson:jackson-mapper-asl:1.8.5'
 }
 
 repositories {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget>
-  <display-name>Google Traffic</display-name>
+  <display-name>Google Analytics</display-name>
   <implements>com.enonic.xp.content-manager.context-widget</implements>
 </widget>

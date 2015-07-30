@@ -1,26 +1,69 @@
-// Set authorized scope.
-var SCOPES = ['https://www.googleapis.com/auth/analytics.readonly'];
+gapi.analytics.ready(function() {
+    var serviceUrl = document.getElementById('ga-service');
+
+    console.log(serviceUrl);
+    /**
+     * Authorize the user immediately if the user has already granted access.
+     * If no access has been created, render an authorize button inside the
+     * element with the ID "embed-api-auth-container".
+     */
+    gapi.analytics.auth.authorize({
+        container: 'embed-api-auth-container',
+        clientid: 'REPLACE WITH YOUR CLIENT ID'
+    });
+
+
+    /**
+     * Create a new ViewSelector instance to be rendered inside of an
+     * element with the id "view-selector-container".
+     */
+    var viewSelector = new gapi.analytics.ViewSelector({
+        container: 'view-selector-container'
+    });
+
+    // Render the view selector to the page.
+    viewSelector.execute();
+
+
+    /**
+     * Create a new DataChart instance with the given query parameters
+     * and Google chart options. It will be rendered inside an element
+     * with the id "chart-container".
+     */
+    var dataChart = new gapi.analytics.googleCharts.DataChart({
+        query: {
+            metrics: 'ga:sessions',
+            dimensions: 'ga:date',
+            'start-date': '30daysAgo',
+            'end-date': 'yesterday'
+        },
+        chart: {
+            container: 'chart-container',
+            type: 'LINE',
+            options: {
+                width: '100%'
+            }
+        }
+    });
+
+
+    /**
+     * Render the dataChart on the page whenever a new view is selected.
+     */
+    viewSelector.on('change', function(ids) {
+        dataChart.set({query: {ids: ids}}).execute();
+    });
+
+});
+/*
+function getToken(serviceUrl) {
+    debugger;
+}
 
 function authorize(event) {
-    // Handles the authorization flow.
-    // `immediate` should be false when invoked from the button click.
-    var useImmdiate = event ? false : true;
-    var CLIENT_ID = document.getElementById('ga-client').value;
-
-    var authData = {
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        immediate: useImmdiate
-    };
-
-    gapi.auth.authorize(authData, function(response) {
-        var authButton = document.getElementById('auth-button');
-        if (response.error) {
-            authButton.hidden = false;
-        }
-        else {
-            authButton.hidden = true;
-            queryAccounts();
+    gapi.analytics.auth.authorize({
+        serverAuth: {
+            access_token: 'XXXXXX'
         }
     });
 }
@@ -130,3 +173,4 @@ function queryCoreReportingApi(profileId) {
 
 // Add an event listener to the 'auth-button'.
 document.getElementById('auth-button').addEventListener('click', authorize);
+*/

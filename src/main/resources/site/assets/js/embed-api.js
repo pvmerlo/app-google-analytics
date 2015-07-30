@@ -1,5 +1,4 @@
 (function(w,d,s,g,js,fs){
-    console.log("embedded api");
     g=w.gapi||(w.gapi={});g.analytics={q:[],ready:function(f){this.q.push(f);}};
     js=d.createElement(s);fs=d.getElementsByTagName(s)[0];
     js.src='https://apis.google.com/js/platform.js';

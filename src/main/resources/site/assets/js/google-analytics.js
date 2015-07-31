@@ -68,9 +68,7 @@ gapi.analytics.ready(function() {
         viewSelector.execute();
 
         /**
-         * Create a new DataChart instance with the given query parameters
-         * and Google chart options. It will be rendered inside an element
-         * with the id "chart-container".
+         * Line chart by sessions
          */
         var dataChart = new gapi.analytics.googleCharts.DataChart({
             query: {
@@ -80,20 +78,108 @@ gapi.analytics.ready(function() {
                 'end-date': 'yesterday'
             },
             chart: {
-                container: 'chart-container',
+                container: 'chart-container-1',
                 type: 'LINE',
                 options: {
-                    width: '100%'
+                    title: 'Traffic by Date'
+                }
+            }
+        });
+
+        /**
+         * List of pages sorted by pageviews
+         */
+            /*
+        var dataChart2 = new gapi.analytics.googleCharts.DataChart({
+            query: {
+                metrics: 'ga:uniquePageviews',
+                dimensions: 'ga:pageTitle',
+                'start-date': '30daysAgo',
+                'end-date': 'yesterday'
+            },
+            chart: {
+                container: 'chart-container-2',
+                type: 'TABLE',
+                options: {
+                    title: 'Unique Pageviews',
+                    height: '300px',
+                    page: 'enable',
+                    sortColumn: 1,
+                    sortAscending: false
+                }
+            }
+        });
+*/
+
+        /**
+         * Pie chart by referer
+         */
+        var dataChart2 = new gapi.analytics.googleCharts.DataChart({
+            query: {
+                metrics: 'ga:users',
+                dimensions: 'ga:source',
+                'start-date': '30daysAgo',
+                'end-date': 'yesterday'
+            },
+            chart: {
+                container: 'chart-container-2',
+                type: 'PIE',
+                options: {
+                    title: 'Traffic by Referer',
+                    is3D: true
+                }
+            }
+        });
+
+        /**
+         * Column chart by users/new users
+         */
+        var dataChart3 = new gapi.analytics.googleCharts.DataChart({
+            query: {
+                metrics: 'ga:users,ga:newUsers',
+                dimensions: 'ga:date',
+                'start-date': '30daysAgo',
+                'end-date': 'yesterday'
+            },
+            chart: {
+                container: 'chart-container-3',
+                type: 'COLUMN',
+                options: {
+                    title: 'Users by Date',
+                    bar: { groupWidth: '75%' },
+                    isStacked: true
                 }
             }
         });
 
 
         /**
+         * Bar chart by countries
+         */
+        var dataChart4 = new gapi.analytics.googleCharts.DataChart({
+            query: {
+                metrics: 'ga:users',
+                dimensions: 'ga:country',
+                'start-date': '30daysAgo',
+                'end-date': 'yesterday'
+            },
+            chart: {
+                container: 'chart-container-4',
+                type: 'GEO',
+                options: {
+                    height: '90%'
+                }
+            }
+        });
+
+        /**
          * Render the dataChart on the page whenever a new view is selected.
          */
         viewSelector.on('change', function(ids) {
             dataChart.set({query: {ids: ids}}).execute();
+            dataChart2.set({query: {ids: ids}}).execute();
+            dataChart3.set({query: {ids: ids}}).execute();
+            dataChart4.set({query: {ids: ids}}).execute();
         });
 
     }

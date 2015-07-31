@@ -1,9 +1,16 @@
-<div>
+<div class="ga-main">
     <h2>Google Analytics</h2>
     <div id="ga-authenticated">
-        <div id="embed-api-auth-container"></div>
-        <div id="chart-container"></div>
-        <div id="view-selector-container"></div>
+        <div id="view-selector-container" class="ga-selector-container ga-container"></div>
+        <div class="ga-chart-container">
+            <div id="chart-container-1" class="ga-chart ga-container"></div>
+            <div id="chart-container-2" class="ga-chart ga-container"></div>
+            <div id="chart-container-3" class="ga-chart ga-container"></div>
+            <div class="ga-chart ga-container no-title">
+            <span>Users by Country</span>
+            <div id="chart-container-4"></div>
+            </div>
+        </div>
     </div>
     <div id="ga-not-authenticated"></div>
 </div>

@@ -1,0 +1,60 @@
+.ga-main {
+    height: auto;
+    background-color: #EEE;
+}
+.ga-authenticated {
+    height: auto;
+}
+
+.ga-chart-container {
+    height: 1500px;
+    width: 100%;
+    padding: 5px;
+}
+
+.ga-container {
+    margin-right: 1.5em;
+    margin-bottom: 1.5em;
+    background-color: #FFF;
+    border: 1px solid #CCC;
+}
+
+.ga-selector-container {
+    height: 42px;
+    padding-top: 7px;
+    padding-left: 7px;
+}
+
+.ga-selector-container table {
+    float: left;
+    width: auto !important;
+}
+
+.ga-selector-container td {
+    width: auto !important;
+}
+
+.ga-selector-container td:first-child {
+    padding-right: 5px;
+}
+
+.ga-selector-container td:last-child {
+    padding-right: 15px;
+}
+
+.ga-chart {
+    float: left;
+    height: 310px;
+    width: 500px;
+    padding: 0 15px;
+}
+
+.ga-chart.no-title {
+    padding-top: 10px;
+    height: 300px;
+}
+
+.ga-chart.no-title span {
+    font-family: Arial;
+    font-size: 16px;
+}

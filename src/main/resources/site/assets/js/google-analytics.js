@@ -33,8 +33,8 @@ gapi.analytics.ready(function() {
         request.open("GET", serviceUrl, true);
         request.onload = function (){
             var responseObject = JSON.parse(request.responseText);
-            if (responseObject.errorMesage) {
-                showAuthenticationError(responseObject.errorMesage);
+            if (responseObject.errorMessage) {
+                showAuthenticationError(responseObject.errorMessage);
             }
             else if (responseObject.token) {
                 setContainerVisible('ga-authenticated', true);

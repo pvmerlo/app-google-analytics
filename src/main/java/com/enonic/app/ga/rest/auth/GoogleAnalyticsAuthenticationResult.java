@@ -4,12 +4,12 @@ public class GoogleAnalyticsAuthenticationResult
 {
     private String token;
 
-    private String errorMesage;
+    private String errorMessage;
 
-    public GoogleAnalyticsAuthenticationResult( final String token, final String errorMesage )
+    public GoogleAnalyticsAuthenticationResult( final String token, final String errorMessage )
     {
         this.token = token == null ? "" : token;
-        this.errorMesage = errorMesage == null ? "" : errorMesage;
+        this.errorMessage = errorMessage == null ? "" : errorMessage;
     }
 
     public String getToken()
@@ -17,8 +17,8 @@ public class GoogleAnalyticsAuthenticationResult
         return token;
     }
 
-    public String getErrorMesage()
+    public String getErrorMessage()
     {
-        return errorMesage;
+        return errorMessage;
     }
 }

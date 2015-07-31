@@ -15,6 +15,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import com.google.api.client.auth.oauth2.TokenErrorResponse;
+import com.google.api.client.auth.oauth2.TokenResponseException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
@@ -41,74 +43,107 @@ public class GoogleAnalyticsAuthenticationService
 {
     private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
+    private static final String SITE_ERROR_MSG = "Site not found.";
+
+    private static final String SERVICE_ACCOUNT_P12_KEY_ERROR_MSG = "Service Account and P12 key not found.";
+
+    private static final String SERVICE_ACCOUNT_ERROR_MSG = "Service Account not found.";
+
+    private static final String P12_KEY_ERROR_MSG = "P12 key not found.";
+
+    private static final String TOKEN_RETRIEVAL_ERROR_MSG = "Error while retrieving token: ";
+
     private ContentService contentService;
 
     @GET
     @Path("authenticate")
     @Produces(MediaType.APPLICATION_JSON)
-    public String test( @Context HttpServletRequest httpServletRequest )
+    public String authenticate( @Context final HttpServletRequest httpServletRequest )
         throws IOException
     {
-        String accessToken = null;
-        String errorMessage = null;
+        final GoogleAnalyticsAuthenticationResult googleAnalyticsAuthenticationResult = doAuthenticate( httpServletRequest );
 
+        //Prepares the authentication result
+        ObjectMapper mapper = new ObjectMapper();
+        String authenticationResult = mapper.writeValueAsString( googleAnalyticsAuthenticationResult );
+
+        return authenticationResult;
+    }
+
+    private GoogleAnalyticsAuthenticationResult doAuthenticate( final HttpServletRequest httpServletRequest )
+    {
         //Retrieves the service account and P12 key
         String serviceAccount = null;
         String p12Key = null;
         final PortalRequest portalRequest = PortalRequestAccessor.get( httpServletRequest );
         final Site site = portalRequest.getSite();
-        if ( site != null )
+        if ( site == null )
         {
-            final PropertyTree siteConfig = site.getSiteConfig( ApplicationKey.from( "com.enonic.app.ga" ) );
-            if ( siteConfig != null )
+            return error( SITE_ERROR_MSG );
+        }
+        final PropertyTree siteConfig = site.getSiteConfig( ApplicationKey.from( "com.enonic.app.ga" ) );
+        if ( siteConfig != null )
+        {
+            final Property serviceAccountProperty = siteConfig.getProperty( "serviceAccount" );
+            if ( serviceAccountProperty != null )
             {
-                final Property serviceAccountProperty = siteConfig.getProperty( "serviceAccount" );
-                if ( serviceAccountProperty != null )
-                {
-                    serviceAccount = serviceAccountProperty.getString();
-                }
-                final Property p12KeyProperty = siteConfig.getProperty( "p12Key" );
-                if ( p12KeyProperty != null )
-                {
-                    p12Key = p12KeyProperty.getString();
-                }
+                serviceAccount = serviceAccountProperty.getString();
+            }
+            final Property p12KeyProperty = siteConfig.getProperty( "p12Key" );
+            if ( p12KeyProperty != null )
+            {
+                p12Key = p12KeyProperty.getString();
             }
         }
 
         //Retrieves the linked P12 file
         InputStream p12InputStream = null;
+        if ( serviceAccount == null && p12Key == null )
+        {
+            return error( SERVICE_ACCOUNT_P12_KEY_ERROR_MSG );
+        }
         if ( serviceAccount == null )
         {
-            errorMessage = "Service Account not found";
+            return error( SERVICE_ACCOUNT_ERROR_MSG );
         }
-        else if ( p12Key == null )
+        if ( p12Key == null )
         {
-            errorMessage = "P12 key not found";
+            return error( P12_KEY_ERROR_MSG );
         }
-        else
+        final ContentId p12ContentId = ContentId.from( p12Key );
+        final Content p12Content = contentService.getById( p12ContentId );
+        if ( p12Content instanceof Media )
         {
-            final ContentId p12ContentId = ContentId.from( p12Key );
-            final Content p12Content = contentService.getById( p12ContentId );
-            if ( p12Content instanceof Media )
+            final Attachment sourceAttachment = ( (Media) p12Content ).getSourceAttachment();
+            if ( sourceAttachment != null )
             {
-                final Attachment sourceAttachment = ( (Media) p12Content ).getSourceAttachment();
-                if ( sourceAttachment != null )
-                {
-                    p12InputStream = contentService.getBinaryInputStream( p12ContentId, sourceAttachment.getBinaryReference() );
-                }
+                p12InputStream = contentService.getBinaryInputStream( p12ContentId, sourceAttachment.getBinaryReference() );
             }
         }
 
         //Retrieves the token
-        if ( serviceAccount != null && p12InputStream != null )
+        String accessToken = null;
+        if ( p12InputStream != null )
         {
             try
             {
                 accessToken = retrieveAccessToken( serviceAccount, p12InputStream );
             }
+            catch ( TokenResponseException e )
+            {
+                final TokenErrorResponse tokenErrorResponse = e.getDetails();
+                if ( tokenErrorResponse != null && tokenErrorResponse.getError() != null )
+                {
+                    return error( TOKEN_RETRIEVAL_ERROR_MSG + tokenErrorResponse.getError() );
+                }
+                else
+                {
+                    return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
+                }
+            }
             catch ( Exception e )
             {
-                errorMessage = "Error while retrieving token: " + e.getMessage();
+                return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
             }
             finally
             {
@@ -118,17 +153,22 @@ public class GoogleAnalyticsAuthenticationService
                 }
                 catch ( IOException e )
                 {
-                    errorMessage = "Error while closing P12 key file: " + e.getMessage();
+                    return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
                 }
             }
         }
 
-        //Prepares the authentication result
-        ObjectMapper mapper = new ObjectMapper();
-        String authenticationResult = mapper.writeValueAsString( new GoogleAnalyticsAuthenticationResult( accessToken, errorMessage ) );
+        return success( accessToken );
+    }
 
-        return authenticationResult;
+    private static GoogleAnalyticsAuthenticationResult success( String accessToken )
+    {
+        return new GoogleAnalyticsAuthenticationResult( accessToken, null );
+    }
 
+    private static GoogleAnalyticsAuthenticationResult error( String errorMessage )
+    {
+        return new GoogleAnalyticsAuthenticationResult( null, errorMessage );
     }
 
     @Reference

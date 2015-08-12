@@ -2,9 +2,7 @@ var portal = require('/lib/xp/portal');
 var thymeleaf = require('/lib/xp/thymeleaf');
 
 function handleGet(req) {
-    var serviceUrl = portal.restServiceUrl({
-        path: 'google-analytics/authenticate'
-    });
+    var content = portal.getContent();
     var view = resolve('ga-report.html');
 
     return {
@@ -16,7 +14,9 @@ function handleGet(req) {
             ],
             bodyEnd: [
                 '<script src="' + portal.assetUrl({path: 'js/embed-api.js'}) + '" type="text/javascript"></script>',
-                '<script src="' + portal.assetUrl({path: 'js/google-analytics.js'}) + '" type="text/javascript" serviceurl="' + serviceUrl + '"></script>'
+                '<script src="' + portal.assetUrl({path: 'js/google-analytics.js'}) +
+                '" type="text/javascript" serviceurl="/admin/rest/google-analytics/authenticate/' + content._id +
+                '"></script>'
             ]
         }
     };

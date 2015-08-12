@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.PrivateKey;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -24,22 +26,25 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.SecurityUtils;
 import com.google.api.services.analytics.AnalyticsScopes;
 
+import com.enonic.xp.admin.AdminResource;
+import com.enonic.xp.admin.rest.resource.ResourceConstants;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.attachment.Attachment;
 import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentId;
+import com.enonic.xp.content.ContentNotFoundException;
 import com.enonic.xp.content.ContentService;
 import com.enonic.xp.content.Media;
 import com.enonic.xp.data.Property;
 import com.enonic.xp.data.PropertyTree;
-import com.enonic.xp.portal.PortalRequest;
-import com.enonic.xp.portal.PortalRequestAccessor;
-import com.enonic.xp.portal.rest.PortalRestService;
+import com.enonic.xp.security.RoleKeys;
 import com.enonic.xp.site.Site;
 
+@Path(ResourceConstants.REST_ROOT + "google-analytics")
+@RolesAllowed(RoleKeys.ADMIN_LOGIN_ID)
 @Component(immediate = true)
 public class GoogleAnalyticsAuthenticationService
-    implements PortalRestService
+    implements AdminResource
 {
     private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
@@ -56,12 +61,13 @@ public class GoogleAnalyticsAuthenticationService
     private ContentService contentService;
 
     @GET
-    @Path("authenticate")
+    @Path("authenticate/{contentId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String authenticate( @Context final HttpServletRequest httpServletRequest )
+    public String authenticate( @Context final HttpServletRequest httpServletRequest, @PathParam("contentId") final String contentIdString )
         throws IOException
     {
-        final GoogleAnalyticsAuthenticationResult googleAnalyticsAuthenticationResult = doAuthenticate( httpServletRequest );
+        final ContentId contentId = ContentId.from( contentIdString );
+        final GoogleAnalyticsAuthenticationResult googleAnalyticsAuthenticationResult = doAuthenticate( contentId );
 
         //Prepares the authentication result
         ObjectMapper mapper = new ObjectMapper();
@@ -70,13 +76,20 @@ public class GoogleAnalyticsAuthenticationService
         return authenticationResult;
     }
 
-    private GoogleAnalyticsAuthenticationResult doAuthenticate( final HttpServletRequest httpServletRequest )
+    private GoogleAnalyticsAuthenticationResult doAuthenticate( final ContentId contentId )
     {
         //Retrieves the service account and P12 key
         String serviceAccount = null;
         String p12Key = null;
-        final PortalRequest portalRequest = PortalRequestAccessor.get( httpServletRequest );
-        final Site site = portalRequest.getSite();
+        Site site = null;
+        try
+        {
+            site = contentService.getNearestSite( contentId );
+        }
+        catch ( ContentNotFoundException e )
+        {
+        }
+
         if ( site == null )
         {
             return error( SITE_ERROR_MSG );
@@ -175,12 +188,6 @@ public class GoogleAnalyticsAuthenticationService
     public void setContentService( final ContentService contentService )
     {
         this.contentService = contentService;
-    }
-
-    @Override
-    public String getName()
-    {
-        return "google-analytics";
     }
 
     private String retrieveAccessToken( final String serviceAccount, final InputStream p12InputStream )

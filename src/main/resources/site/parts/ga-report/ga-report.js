@@ -4,6 +4,10 @@ var thymeleaf = require('/lib/xp/thymeleaf');
 function handleGet(req) {
     var content = portal.getContent();
     var view = resolve('ga-report.html');
+    var site = portal.getSite();
+    var siteConfig = site.siteConfigs[module.name];
+    var serviceUrl = '/admin/rest/google-analytics/authenticate/' + content._id;
+    var trackingCode = siteConfig.trackingId || "";
 
     return {
         contentType: 'text/html',
@@ -15,8 +19,7 @@ function handleGet(req) {
             bodyEnd: [
                 '<script src="' + portal.assetUrl({path: 'js/embed-api.js'}) + '" type="text/javascript"></script>',
                 '<script src="' + portal.assetUrl({path: 'js/google-analytics.js'}) +
-                '" type="text/javascript" serviceurl="/admin/rest/google-analytics/authenticate/' + content._id +
-                '"></script>'
+                '" type="text/javascript" serviceurl="' + serviceUrl + '" trackingid="' + trackingCode + '"></script>'
             ]
         }
     };

@@ -2,9 +2,6 @@
     height: auto;
     background-color: #EEE;
 }
-.ga-authenticated {
-    height: auto;
-}
 
 .ga-chart-container {
     height: 1500px;
@@ -19,29 +16,6 @@
     border: 1px solid #CCC;
 }
 
-.ga-selector-container {
-    height: 42px;
-    padding-top: 7px;
-    padding-left: 7px;
-}
-
-.ga-selector-container table {
-    float: left;
-    width: auto !important;
-}
-
-.ga-selector-container td {
-    width: auto !important;
-}
-
-.ga-selector-container td:first-child {
-    padding-right: 5px;
-}
-
-.ga-selector-container td:last-child {
-    padding-right: 15px;
-}
-
 .ga-chart {
     float: left;
     height: 310px;
@@ -49,12 +23,26 @@
     padding: 0 15px;
 }
 
-.ga-chart.no-title {
-    padding-top: 10px;
-    height: 300px;
+.ga-title {
+    display: block;
+    font-size: 1.5em;
+    -webkit-margin-before: 0.83em;
+    -webkit-margin-after: 0.83em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    font-weight: bold;
+    padding-bottom: 10px;
+    background-color: #FFF;
 }
 
-.ga-chart.no-title span {
-    font-family: Arial;
-    font-size: 16px;
+.ga-not-authenticated:before {
+    content: "Google Analytics \A";
+    white-space: pre;
+    display: block;
+    font-size: 1.5em;
+    -webkit-margin-before: 0.83em;
+    -webkit-margin-after: 0.83em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    font-weight: bold;
 }

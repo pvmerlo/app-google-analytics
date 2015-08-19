@@ -2,7 +2,7 @@
 <site>
   <config>
     <input type="TextLine" name="serviceAccount">
-      <label>Service Account Email</label>
+      <label>Service account</label>
       <occurrences minimum="0" maximum="1"/>
     </input>
     <input type="FileUploader" name="p12Key">
@@ -14,6 +14,10 @@
         </allow-types>
         <hide-drop-zone>true</hide-drop-zone>
       </config>
+    </input>
+    <input type="TextLine" name="trackingId">
+      <label>Tracking Id</label>
+      <occurrences minimum="0" maximum="1"/>
     </input>
   </config>
 </site>

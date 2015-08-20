@@ -1,21 +1,20 @@
 package com.enonic.app.ga.rest.auth;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.PrivateKey;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import com.google.api.client.auth.oauth2.TokenErrorResponse;
 import com.google.api.client.auth.oauth2.TokenResponseException;
@@ -25,30 +24,20 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.SecurityUtils;
 import com.google.api.services.analytics.AnalyticsScopes;
+import com.google.common.base.Strings;
 
 import com.enonic.xp.admin.AdminResource;
 import com.enonic.xp.admin.rest.resource.ResourceConstants;
-import com.enonic.xp.app.ApplicationKey;
-import com.enonic.xp.attachment.Attachment;
-import com.enonic.xp.content.Content;
-import com.enonic.xp.content.ContentId;
-import com.enonic.xp.content.ContentNotFoundException;
-import com.enonic.xp.content.ContentService;
-import com.enonic.xp.content.Media;
-import com.enonic.xp.data.Property;
-import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.security.RoleKeys;
-import com.enonic.xp.site.Site;
 
 @Path(ResourceConstants.REST_ROOT + "google-analytics")
-@RolesAllowed(RoleKeys.ADMIN_LOGIN_ID)
+@RolesAllowed(RoleKeys.ADMIN_ID)
 @Component(immediate = true)
 public class GoogleAnalyticsAuthenticationService
     implements AdminResource
 {
     private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
-    private static final String SITE_ERROR_MSG = "Site not found.";
 
     private static final String SERVICE_ACCOUNT_P12_KEY_ERROR_MSG = "Service Account and P12 key not found.";
 
@@ -58,16 +47,13 @@ public class GoogleAnalyticsAuthenticationService
 
     private static final String TOKEN_RETRIEVAL_ERROR_MSG = "Error while retrieving token: ";
 
-    private ContentService contentService;
-
     @GET
-    @Path("authenticate/{contentId}")
+    @Path("authenticate")
     @Produces(MediaType.APPLICATION_JSON)
-    public String authenticate( @Context final HttpServletRequest httpServletRequest, @PathParam("contentId") final String contentIdString )
+    public String authenticate()
         throws IOException
     {
-        final ContentId contentId = ContentId.from( contentIdString );
-        final GoogleAnalyticsAuthenticationResult googleAnalyticsAuthenticationResult = doAuthenticate( contentId );
+        final GoogleAnalyticsAuthenticationResult googleAnalyticsAuthenticationResult = doAuthenticate();
 
         //Prepares the authentication result
         ObjectMapper mapper = new ObjectMapper();
@@ -76,102 +62,84 @@ public class GoogleAnalyticsAuthenticationService
         return authenticationResult;
     }
 
-    private GoogleAnalyticsAuthenticationResult doAuthenticate( final ContentId contentId )
+    private GoogleAnalyticsAuthenticationResult doAuthenticate()
     {
         //Retrieves the service account and P12 key
-        String serviceAccount = null;
-        String p12Key = null;
-        Site site = null;
-        try
-        {
-            site = contentService.getNearestSite( contentId );
-        }
-        catch ( ContentNotFoundException e )
-        {
-        }
+        final String homeDirectoryPath = HomeDir.get().toString();
+        final java.nio.file.Path serverAccountPath = Paths.get( homeDirectoryPath, "config/ga_account.txt" );
+        final String serviceAccount = readFirstLine( serverAccountPath );
+        final java.nio.file.Path p12KeyPath = Paths.get( homeDirectoryPath, "config/ga_key.p12" );
 
-        if ( site == null )
-        {
-            return error( SITE_ERROR_MSG );
-        }
-        final PropertyTree siteConfig = site.getSiteConfig( ApplicationKey.from( "com.enonic.app.ga" ) );
-        if ( siteConfig != null )
-        {
-            final Property serviceAccountProperty = siteConfig.getProperty( "serviceAccount" );
-            if ( serviceAccountProperty != null )
-            {
-                serviceAccount = serviceAccountProperty.getString();
-            }
-            final Property p12KeyProperty = siteConfig.getProperty( "p12Key" );
-            if ( p12KeyProperty != null )
-            {
-                p12Key = p12KeyProperty.getString();
-            }
-        }
-
-        //Retrieves the linked P12 file
-        InputStream p12InputStream = null;
-        if ( serviceAccount == null && p12Key == null )
+        if ( Strings.isNullOrEmpty( serviceAccount ) && !Files.exists( p12KeyPath ) )
         {
             return error( SERVICE_ACCOUNT_P12_KEY_ERROR_MSG );
         }
-        if ( serviceAccount == null )
+        if ( Strings.isNullOrEmpty( serviceAccount ) )
         {
             return error( SERVICE_ACCOUNT_ERROR_MSG );
         }
-        if ( p12Key == null )
+        if ( !Files.exists( p12KeyPath ) )
         {
             return error( P12_KEY_ERROR_MSG );
-        }
-        final ContentId p12ContentId = ContentId.from( p12Key );
-        final Content p12Content = contentService.getById( p12ContentId );
-        if ( p12Content instanceof Media )
-        {
-            final Attachment sourceAttachment = ( (Media) p12Content ).getSourceAttachment();
-            if ( sourceAttachment != null )
-            {
-                p12InputStream = contentService.getBinaryInputStream( p12ContentId, sourceAttachment.getBinaryReference() );
-            }
         }
 
         //Retrieves the token
         String accessToken = null;
-        if ( p12InputStream != null )
+        InputStream p12KeyInputStream = null;
+        try
         {
-            try
+            p12KeyInputStream = Files.newInputStream( p12KeyPath );
+            accessToken = retrieveAccessToken( serviceAccount, p12KeyInputStream );
+        }
+        catch ( TokenResponseException e )
+        {
+            final TokenErrorResponse tokenErrorResponse = e.getDetails();
+            if ( tokenErrorResponse != null && tokenErrorResponse.getError() != null )
             {
-                accessToken = retrieveAccessToken( serviceAccount, p12InputStream );
+                return error( TOKEN_RETRIEVAL_ERROR_MSG + tokenErrorResponse.getError() );
             }
-            catch ( TokenResponseException e )
-            {
-                final TokenErrorResponse tokenErrorResponse = e.getDetails();
-                if ( tokenErrorResponse != null && tokenErrorResponse.getError() != null )
-                {
-                    return error( TOKEN_RETRIEVAL_ERROR_MSG + tokenErrorResponse.getError() );
-                }
-                else
-                {
-                    return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
-                }
-            }
-            catch ( Exception e )
+            else
             {
                 return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
             }
-            finally
+        }
+        catch ( Exception e )
+        {
+            return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
+        }
+        finally
+        {
+            try
             {
-                try
+                if ( p12KeyInputStream != null )
                 {
-                    p12InputStream.close();
+                    p12KeyInputStream.close();
                 }
-                catch ( IOException e )
-                {
-                    return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
-                }
+            }
+            catch ( IOException e )
+            {
+                return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
             }
         }
 
         return success( accessToken );
+    }
+
+    private static String readFirstLine( java.nio.file.Path path )
+    {
+        if ( Files.isReadable( path ) )
+        {
+            try
+            {
+                final BufferedReader bufferedReader = Files.newBufferedReader( path );
+                return bufferedReader.readLine();
+            }
+            catch ( IOException e )
+            {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     private static GoogleAnalyticsAuthenticationResult success( String accessToken )
@@ -182,12 +150,6 @@ public class GoogleAnalyticsAuthenticationService
     private static GoogleAnalyticsAuthenticationResult error( String errorMessage )
     {
         return new GoogleAnalyticsAuthenticationResult( null, errorMessage );
-    }
-
-    @Reference
-    public void setContentService( final ContentService contentService )
-    {
-        this.contentService = contentService;
     }
 
     private String retrieveAccessToken( final String serviceAccount, final InputStream p12InputStream )

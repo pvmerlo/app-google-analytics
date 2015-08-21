@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
   <config>
-    <input type="TextLine" name="serviceAccount">
-      <label>Service account</label>
-      <occurrences minimum="0" maximum="1"/>
-    </input>
-    <input type="FileUploader" name="p12Key">
-      <label>P12 key</label>
-      <occurrences minimum="0" maximum="1"/>
-      <config>
-        <allow-types>
-          <type name="Certificate file">p12</type>
-        </allow-types>
-        <hide-drop-zone>true</hide-drop-zone>
-      </config>
-    </input>
     <input type="TextLine" name="trackingId">
       <label>Tracking Id</label>
       <occurrences minimum="0" maximum="1"/>

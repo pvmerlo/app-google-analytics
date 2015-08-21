@@ -2,11 +2,10 @@ var portal = require('/lib/xp/portal');
 var thymeleaf = require('/lib/xp/thymeleaf');
 
 function handleGet(req) {
-    var content = portal.getContent();
     var view = resolve('ga-report.html');
     var site = portal.getSite();
     var siteConfig = site.siteConfigs[module.name];
-    var serviceUrl = '/admin/rest/google-analytics/authenticate/' + content._id;
+    var serviceUrl = '/admin/rest/google-analytics/authenticate';
     var trackingCode = siteConfig.trackingId || "";
 
     return {

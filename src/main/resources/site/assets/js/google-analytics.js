@@ -108,7 +108,7 @@ gapi.analytics.ready(function() {
             return;
         }
         if (!trackingId) {
-            showAuthenticationError("Tracking code not found");
+            showAuthenticationError("Tracking Id not found");
             return;
         }
 

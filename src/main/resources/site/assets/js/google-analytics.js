@@ -25,11 +25,6 @@ gapi.analytics.ready(function() {
         return container;
     }
 
-    function setTitle(siteUrl) {
-        var container = document.getElementById("ga-title");
-        container.innerText = "Google Analytics for " + siteUrl;
-    }
-
     function showAuthenticationError(errorMessage) {
         setContainerVisible('ga-not-authenticated', true).innerText = "Authentication failed" + (errorMessage ? ": " + errorMessage : "");
         setContainerVisible('ga-authenticated', false);
@@ -59,7 +54,9 @@ gapi.analytics.ready(function() {
             // Get the first Google Analytics account.
             var firstAccountId = response.result.items[0].id;
 
-            getPropertyUrl(firstAccountId, trackingId);
+            // Uncomment if we need to show url for selected tracking Id
+            //getPropertyUrl(firstAccountId, trackingId);
+
             // Query for properties.
             queryProfiles(firstAccountId, trackingId);
         } else {
@@ -158,7 +155,8 @@ gapi.analytics.ready(function() {
                 container: 'chart-container-1',
                 type: 'LINE',
                 options: {
-                    title: 'Traffic by Date'
+                    title: 'Traffic by Date',
+                    width: '100%'
                 }
             }
         });
@@ -204,7 +202,8 @@ gapi.analytics.ready(function() {
                 type: 'PIE',
                 options: {
                     title: 'Traffic by Referer',
-                    is3D: true
+                    is3D: true,
+                    width: '100%'
                 }
             }
         });
@@ -226,7 +225,8 @@ gapi.analytics.ready(function() {
                 options: {
                     title: 'Users by Date',
                     bar: { groupWidth: '75%' },
-                    isStacked: true
+                    isStacked: true,
+                    width: '100%'
                 }
             }
         });
@@ -247,7 +247,7 @@ gapi.analytics.ready(function() {
                 container: 'chart-container-4',
                 type: 'GEO',
                 options: {
-                    height: '90%'
+                    width: '100%'
                 }
             }
         });

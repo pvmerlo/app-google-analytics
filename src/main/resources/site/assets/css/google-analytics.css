@@ -1,48 +1,7 @@
-.ga-main {
-    height: auto;
-    background-color: #EEE;
-}
-
-.ga-chart-container {
-    height: 1500px;
-    width: 100%;
-    padding: 5px;
-}
-
 .ga-container {
-    margin-right: 1.5em;
-    margin-bottom: 1.5em;
-    background-color: #FFF;
+    margin-bottom: 1em;
+    margin-right: 1em;
     border: 1px solid #CCC;
-}
-
-.ga-chart {
     float: left;
-    height: 310px;
-    width: 500px;
     padding: 0 15px;
-}
-
-.ga-title {
-    display: block;
-    font-size: 1.5em;
-    -webkit-margin-before: 0.83em;
-    -webkit-margin-after: 0.83em;
-    -webkit-margin-start: 0px;
-    -webkit-margin-end: 0px;
-    font-weight: bold;
-    padding-bottom: 10px;
-    background-color: #FFF;
-}
-
-.ga-not-authenticated:before {
-    content: "Google Analytics \A";
-    white-space: pre;
-    display: block;
-    font-size: 1.5em;
-    -webkit-margin-before: 0.83em;
-    -webkit-margin-after: 0.83em;
-    -webkit-margin-start: 0px;
-    -webkit-margin-end: 0px;
-    font-weight: bold;
 }

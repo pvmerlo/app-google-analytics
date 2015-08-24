@@ -33,7 +33,7 @@
 
 ![](src/main/resources/images/ga_07.png)
 
-8. Select P12 as a key type and click Create. The file with extension .p12 will be downloaded to the Downloads folder on your PC. Rename this file to “ga_key.p12” and move it to config folder of your XP installation (xp_home/config).
+Select P12 as a key type and click Create. The file with extension .p12 will be downloaded to the Downloads folder on your PC. Rename this file to “ga_key.p12” and move it to config folder of your XP installation (xp_home/config).
 
 ![](src/main/resources/images/ga_08.png)
 

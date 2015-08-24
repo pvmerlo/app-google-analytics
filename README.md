@@ -5,31 +5,31 @@
 
 ![](src/main/resources/images/ga_00.png)
 
-1. [Open Google Developers Console](https://console.developers.google.com/project) and click Create Project button.
+* [Open Google Developers Console](https://console.developers.google.com/project) and click Create Project button.
 
 ![](src/main/resources/images/ga_01.png)
 
-2. Fill in project name (for example, “Google Analytics”) and create your new project.
+* Fill in project name (for example, “Google Analytics”) and create your new project.
 
 ![](src/main/resources/images/ga_02.png)
 
-3. You will be redirected to the Project Dashboard of the new project. Next step is to enable Google Analytics API for the project. In the menu on the left-hand site click “APIs” under “APIs & auth”.
+* You will be redirected to the Project Dashboard of the new project. Next step is to enable Google Analytics API for the project. In the menu on the left-hand site click “APIs” under “APIs & auth”.
 
 ![](src/main/resources/images/ga_03.png)
 
-4. Write “Analytics” in the search field and select “Analytics API” from the list.
+* Write “Analytics” in the search field and select “Analytics API” from the list.
 
 ![](src/main/resources/images/ga_04.png)
 
-5. Click “Enable API” button.
+* Click “Enable API” button.
 
 ![](src/main/resources/images/ga_05.png)
 
-6. Select “Credentials” under “APIs & auth” from the menu and click “Add credentials” button.
+* Select “Credentials” under “APIs & auth” from the menu and click “Add credentials” button.
 
 ![](src/main/resources/images/ga_06.png)
 
-7. Select “Service account” from the dropdown.
+* Select “Service account” from the dropdown.
 
 ![](src/main/resources/images/ga_07.png)
 
@@ -37,19 +37,19 @@
 
 ![](src/main/resources/images/ga_08.png)
 
-9. In the new screen that opens select email address in the list and copy it to clipboard.
+* In the new screen that opens select email address in the list and copy it to clipboard.
 
 ![](src/main/resources/images/ga_09.png)
 
-10. In the Google Analytics administration console click “User Management” under the account you want to add integration with.
+* In the Google Analytics administration console click “User Management” under the account you want to add integration with.
 
 ![](src/main/resources/images/ga_10.png)
 
-11. At the bottom of the screen that opens next paste service account email from clipboard into “Add permissions for” field, then click “Add” button. This will establish the link between API service account and Google Analytics account.
+* At the bottom of the screen that opens next paste service account email from clipboard into “Add permissions for” field, then click “Add” button. This will establish the link between API service account and Google Analytics account.
 
 ![](src/main/resources/images/ga_11.png)
 
-12. In the config folder of your XP installation (xp_home\config) create a text file called “ga_account.txt”, paste the same service account email from clipboard into the file and save.
+* In the config folder of your XP installation (xp_home\config) create a text file called “ga_account.txt”, paste the same service account email from clipboard into the file and save.
 
 ![](src/main/resources/images/ga_12.png)
 
@@ -59,15 +59,15 @@
 
 This concludes external part of the integration.
 
-13. Now [download Google Analytics App](https://github.com/enonic/app-google-analytics.git), build and deploy. The Google Analytics App should now appear in the Applications console.
+* Now [download Google Analytics App](https://github.com/enonic/app-google-analytics.git), build and deploy. The Google Analytics App should now appear in the Applications console.
 
 ![](src/main/resources/images/ga_13.png)
 
-14. In the Content Manager of Enonic XP click Edit for a site you’re setting up integration for and select “Google Analytics App” from Site config dropdown.
+* In the Content Manager of Enonic XP click Edit for a site you’re setting up integration for and select “Google Analytics App” from Site config dropdown.
 
 ![](src/main/resources/images/ga_14.png)
 
-15. In the Google Analytics App config section enter Tracking Id of your website.
+* In the Google Analytics App config section enter Tracking Id of your website.
 
 ![](src/main/resources/images/ga_15.png)
 
@@ -75,3 +75,7 @@ If you don’t immediately have it, you can find it in the Google Analytics Admi
 
 ![](src/main/resources/images/ga_15_2.png)
 
+That’s it, you’re done with integration!
+You should now be able to see "Google Analytics" in the detail panel of your website.
+
+![](src/main/resources/images/ga_15_3.png)

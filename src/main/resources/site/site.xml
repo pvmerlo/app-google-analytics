@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
   <config>
-    <input type="TextLine" name="clientId">
-      <label>Client Id</label>
+    <input type="TextLine" name="trackingId">
+      <label>Tracking Id</label>
       <occurrences minimum="0" maximum="1"/>
     </input>
   </config>

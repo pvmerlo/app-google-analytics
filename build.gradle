@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.enonic.xp:gradle-plugin:6.0.0-SNAPSHOT'
+        classpath 'com.enonic.xp:gradle-plugin:6.2.0-SNAPSHOT'
     }
 }
 
@@ -16,7 +16,7 @@ apply plugin: 'maven'
 apply plugin: 'com.enonic.xp.app'
 
 group = 'com.enonic.app'
-version = '6.0.0-SNAPSHOT'
+version = '6.2.0-SNAPSHOT'
 
 app {
     name = 'com.enonic.app.ga'
@@ -26,17 +26,17 @@ app {
 }
 
 dependencies {
-    compile 'com.enonic.xp:core-api:6.0.0-SNAPSHOT'
-    compile 'com.enonic.xp:portal-api:6.0.0-SNAPSHOT'
-    compile 'com.enonic.xp:admin-api:6.0.0-SNAPSHOT'
+    compile 'com.enonic.xp:core-api:6.2.0-SNAPSHOT'
+    compile 'com.enonic.xp:portal-api:6.2.0-SNAPSHOT'
+    compile 'com.enonic.xp:admin-api:6.2.0-SNAPSHOT'
     compile 'org.jboss.resteasy:jaxrs-api:3.0.8.Final'
     compile 'javax.servlet:javax.servlet-api:3.0.1'
     compile 'javax.annotation:javax.annotation-api:1.2'
-    include 'com.enonic.xp:lib-portal:6.0.0-SNAPSHOT'
-    include 'com.enonic.xp:lib-thymeleaf:6.0.0-SNAPSHOT'
-    include 'com.enonic.xp:lib-xslt:6.0.0-SNAPSHOT'
-    include 'com.enonic.xp:lib-mustache:6.0.0-SNAPSHOT'
-    include 'com.enonic.xp:lib-i18n:6.0.0-SNAPSHOT'
+    include 'com.enonic.xp:lib-portal:6.2.0-SNAPSHOT'
+    include 'com.enonic.xp:lib-thymeleaf:6.2.0-SNAPSHOT'
+    include 'com.enonic.xp:lib-xslt:6.2.0-SNAPSHOT'
+    include 'com.enonic.xp:lib-mustache:6.2.0-SNAPSHOT'
+    include 'com.enonic.xp:lib-i18n:6.2.0-SNAPSHOT'
     include( 'com.google.apis:google-api-services-analytics:v3-rev116-1.20.0' ) {
         exclude group: 'com.google.guava', module: 'guava-jdk5'
     }

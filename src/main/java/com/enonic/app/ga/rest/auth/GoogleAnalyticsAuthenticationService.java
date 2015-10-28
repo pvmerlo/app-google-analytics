@@ -26,16 +26,15 @@ import com.google.api.client.util.SecurityUtils;
 import com.google.api.services.analytics.AnalyticsScopes;
 import com.google.common.base.Strings;
 
-import com.enonic.xp.admin.AdminResource;
-import com.enonic.xp.admin.rest.resource.ResourceConstants;
 import com.enonic.xp.home.HomeDir;
+import com.enonic.xp.jaxrs.JaxRsComponent;
 import com.enonic.xp.security.RoleKeys;
 
-@Path(ResourceConstants.REST_ROOT + "google-analytics")
+@Path("admin/rest/google-analytics")
 @RolesAllowed(RoleKeys.ADMIN_ID)
 @Component(immediate = true)
 public class GoogleAnalyticsAuthenticationService
-    implements AdminResource
+    implements JaxRsComponent
 {
     private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 

@@ -3,8 +3,7 @@ var thymeleaf = require('/lib/xp/thymeleaf');
 
 function handleGet(req) {
     var view = resolve('ga-report.html');
-    var site = portal.getSite();
-    var siteConfig = site.siteConfigs[module.name];
+    var siteConfig = portal.getSiteConfig();
     var serviceUrl = '/admin/rest/google-analytics/authenticate';
     var trackingCode = siteConfig.trackingId || "";
 

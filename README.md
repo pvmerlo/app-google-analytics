@@ -57,7 +57,7 @@ Select P12 as a key type and click Create. The file with extension .p12 will be 
 
 ![](src/main/resources/images/ga_12.png)
 
-*At this point you’re supposed to have two files in xp_home/config related to integration with GoogleAnalytics: ga_key.p12 and com.enonic.app.ga.cfg.
+* At this point you’re supposed to have two files in xp_home/config related to integration with GoogleAnalytics: ga_key.p12 and com.enonic.app.ga.cfg.
 
 ![](src/main/resources/images/ga_12_2.png)
 

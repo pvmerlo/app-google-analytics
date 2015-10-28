@@ -1,11 +1,11 @@
 package com.enonic.app.ga.rest.auth;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
+import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -14,6 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 import com.google.api.client.auth.oauth2.TokenErrorResponse;
@@ -26,17 +27,20 @@ import com.google.api.client.util.SecurityUtils;
 import com.google.api.services.analytics.AnalyticsScopes;
 import com.google.common.base.Strings;
 
-import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.jaxrs.JaxRsComponent;
 import com.enonic.xp.security.RoleKeys;
 
 @Path("admin/rest/google-analytics")
 @RolesAllowed(RoleKeys.ADMIN_ID)
-@Component(immediate = true)
+@Component(immediate = true, configurationPid = "com.enonic.app.ga")
 public class GoogleAnalyticsAuthenticationService
     implements JaxRsComponent
 {
     private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+
+    private static final String GA_SERVICE_ACCOUNT_PROPERTY_KEY = "ga.serviceAccount";
+
+    private static final String GA_P12_KEY_PATH = "ga.p12KeyPath";
 
     private static final String SERVICE_ACCOUNT_P12_KEY_ERROR_MSG = "Service Account and P12 key not found.";
 
@@ -45,6 +49,25 @@ public class GoogleAnalyticsAuthenticationService
     private static final String P12_KEY_ERROR_MSG = "P12 key not found.";
 
     private static final String TOKEN_RETRIEVAL_ERROR_MSG = "Error while retrieving token: ";
+
+    private String gaServiceAccount;
+
+    private String gaP12KeyPathValue;
+
+    @Activate
+    public void activate( final Map<String, String> map )
+    {
+        this.gaServiceAccount = map.get( GA_SERVICE_ACCOUNT_PROPERTY_KEY );
+        if ( this.gaServiceAccount != null )
+        {
+            this.gaServiceAccount = this.gaServiceAccount.trim();
+        }
+        this.gaP12KeyPathValue = map.get( GA_P12_KEY_PATH );
+        if ( this.gaP12KeyPathValue != null )
+        {
+            this.gaP12KeyPathValue = this.gaP12KeyPathValue.trim();
+        }
+    }
 
     @GET
     @Path("authenticate")
@@ -64,31 +87,28 @@ public class GoogleAnalyticsAuthenticationService
     private GoogleAnalyticsAuthenticationResult doAuthenticate()
     {
         //Retrieves the service account and P12 key
-        final String homeDirectoryPath = HomeDir.get().toString();
-        final java.nio.file.Path serverAccountPath = Paths.get( homeDirectoryPath, "config/ga_account.txt" );
-        final String serviceAccount = readFirstLine( serverAccountPath );
-        final java.nio.file.Path p12KeyPath = Paths.get( homeDirectoryPath, "config/ga_key.p12" );
+        final java.nio.file.Path ga12KeyPath = gaP12KeyPathValue != null ? Paths.get( gaP12KeyPathValue ) : null;
 
-        if ( Strings.isNullOrEmpty( serviceAccount ) && !Files.exists( p12KeyPath ) )
+        if ( Strings.isNullOrEmpty( gaServiceAccount ) && ( ga12KeyPath == null || !Files.exists( ga12KeyPath ) ) )
         {
             return error( SERVICE_ACCOUNT_P12_KEY_ERROR_MSG );
         }
-        if ( Strings.isNullOrEmpty( serviceAccount ) )
+        if ( Strings.isNullOrEmpty( gaServiceAccount ) )
         {
             return error( SERVICE_ACCOUNT_ERROR_MSG );
         }
-        if ( !Files.exists( p12KeyPath ) )
+        if ( ( ga12KeyPath == null || !Files.exists( ga12KeyPath ) ) )
         {
             return error( P12_KEY_ERROR_MSG );
         }
 
         //Retrieves the token
         String accessToken = null;
-        InputStream p12KeyInputStream = null;
+        InputStream gaP12KeyInputStream = null;
         try
         {
-            p12KeyInputStream = Files.newInputStream( p12KeyPath );
-            accessToken = retrieveAccessToken( serviceAccount, p12KeyInputStream );
+            gaP12KeyInputStream = Files.newInputStream( ga12KeyPath );
+            accessToken = retrieveAccessToken( gaServiceAccount, gaP12KeyInputStream );
         }
         catch ( TokenResponseException e )
         {
@@ -110,9 +130,9 @@ public class GoogleAnalyticsAuthenticationService
         {
             try
             {
-                if ( p12KeyInputStream != null )
+                if ( gaP12KeyInputStream != null )
                 {
-                    p12KeyInputStream.close();
+                    gaP12KeyInputStream.close();
                 }
             }
             catch ( IOException e )
@@ -122,23 +142,6 @@ public class GoogleAnalyticsAuthenticationService
         }
 
         return success( accessToken );
-    }
-
-    private static String readFirstLine( java.nio.file.Path path )
-    {
-        if ( Files.isReadable( path ) )
-        {
-            try
-            {
-                final BufferedReader bufferedReader = Files.newBufferedReader( path );
-                return bufferedReader.readLine();
-            }
-            catch ( IOException e )
-            {
-                e.printStackTrace();
-            }
-        }
-        return null;
     }
 
     private static GoogleAnalyticsAuthenticationResult success( String accessToken )

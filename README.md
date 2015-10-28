@@ -49,11 +49,15 @@ Select P12 as a key type and click Create. The file with extension .p12 will be 
 
 ![](src/main/resources/images/ga_11.png)
 
-* In the config folder of your XP installation (xp_home\config) create a text file called “ga_account.txt”, paste the same service account email from clipboard into the file and save.
+* In the config folder of your XP installation (xp_home/config) create a text file called “com.enonic.app.ga.cfg”. In this file write the following content where \<service-account\> is the service account email you used previously:
+```
+    ga.serviceAccount = <service-account>
+    ga.p12KeyPath = ${xp.home}/config/ga_key.p12
+```
 
 ![](src/main/resources/images/ga_12.png)
 
-*At this point you’re supposed to have two files in xp_home\config related to integration with GoogleAnalytics: ga_key.p12 and ga_account.txt.*
+*At this point you’re supposed to have two files in xp_home/config related to integration with GoogleAnalytics: ga_key.p12 and com.enonic.app.ga.cfg.
 
 ![](src/main/resources/images/ga_12_2.png)
 

@@ -1,7 +1,16 @@
 .ga-container {
-    margin-bottom: 1em;
-    margin-right: 1em;
-    border: 1px solid #CCC;
+    margin: 5px;
     float: left;
-    padding: 0 15px;
+    height: 300px;
+    width: 100%;
+    box-shadow: 0 1px 2px 1px rgba(0, 0, 0, 0.1);
+}
+.ga-container .gapi-analytics-data-chart {
+    padding: 0 5px;
+}
+#ga-main, #ga-authenticated {
+    height: auto;
+}
+#ga-not-authenticated {
+    height: 60px;
 }

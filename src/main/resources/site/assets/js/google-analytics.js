@@ -1,12 +1,12 @@
-function getDocument() {
-    return document.currentScript ? document.currentScript.ownerDocument : document;
+function getDocument(script) {
+    return script ? script.ownerDocument : document;
 }
 
-var thisDocument = getDocument();
-var script = thisDocument.getElementById("ga-script");
-var serviceUrl = script.getAttribute('serviceurl');
-var trackingId = script.getAttribute('trackingid');
-var uid = thisDocument.URL.split('?uid=')[1];
+var gaScript = document.currentScript.__importElement || document.currentScript;
+var gaDocument = getDocument(gaScript);
+var serviceUrl = gaScript.getAttribute('serviceurl');
+var trackingId = gaScript.getAttribute('trackingid');
+var uid = gaDocument.baseURI.split('?uid=')[1];
 
 function fireReadyEvent() {
     if (!uid) {
@@ -21,7 +21,7 @@ function fireReadyEvent() {
 }
 
 function getContainer(containerId) {
-    return document.getElementById(containerId) || thisDocument.getElementById(containerId);
+    return document.getElementById(containerId) || gaDocument.getElementById(containerId);
 }
 
 function setContainerVisible(containerId, visible) {

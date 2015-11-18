@@ -8,9 +8,7 @@
 .ga-container .gapi-analytics-data-chart {
     padding: 0 5px;
 }
+
 #ga-main, #ga-authenticated {
     height: auto;
-}
-#ga-not-authenticated {
-    height: 60px;
 }

@@ -34,14 +34,14 @@ function setContainerVisible(containerId, visible) {
 }
 
 function showAuthenticationError(errorMessage) {
-    setContainerVisible('ga-not-authenticated', true).innerText = "Authentication failed" + (errorMessage ? ": " + errorMessage : "");
+    setContainerVisible('ga-not-authenticated', true).innerHTML = "Authentication failed" + (errorMessage ? ": " + errorMessage : "");
     setContainerVisible('ga-authenticated', false);
 
     fireReadyEvent();
 }
 
 function showError(errorMessage) {
-    setContainerVisible('ga-not-authenticated', true).innerText = "Error: " + errorMessage;
+    setContainerVisible('ga-not-authenticated', true).innerHTML = "Error: " + errorMessage;
     setContainerVisible('ga-authenticated', false);
 
     fireReadyEvent();

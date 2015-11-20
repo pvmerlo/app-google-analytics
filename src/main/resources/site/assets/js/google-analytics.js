@@ -2,7 +2,17 @@ function getDocument(script) {
     return script ? script.ownerDocument : document;
 }
 
-var gaScript = document.currentScript.__importElement || document.currentScript;
+function getCurrentScript() {
+    var script = window.HTMLImports ? window.HTMLImports.currentScript : undefined;
+
+    if (!script && !!document.currentScript) {
+        script = document.currentScript.__importElement || document.currentScript;
+    }
+
+    return script;
+}
+
+var gaScript = getCurrentScript();
 var gaDocument = getDocument(gaScript);
 var serviceUrl = gaScript.getAttribute('serviceurl');
 var trackingId = gaScript.getAttribute('trackingid');

@@ -22,7 +22,6 @@ function fireReadyEvent() {
     if (!uid) {
         return;
     }
-
     var event = new CustomEvent("importready" + uid, {
         detail: getContainer("ga-main")
     });
@@ -31,6 +30,7 @@ function fireReadyEvent() {
 }
 
 function getContainer(containerId) {
+    containerId = containerId + "_" + uid;
     return document.getElementById(containerId) || gaDocument.getElementById(containerId);
 }
 

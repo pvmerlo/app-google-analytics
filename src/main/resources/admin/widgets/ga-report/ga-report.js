@@ -3,7 +3,6 @@ var thymeleaf = require('/lib/xp/thymeleaf');
 
 function handleGet(req) {
     var uid = req.url.split('?uid=')[1];
-    log.info(uid);
     var view = resolve('ga-report.html');
     var siteConfig = portal.getSiteConfig();
 

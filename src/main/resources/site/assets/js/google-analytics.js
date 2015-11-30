@@ -18,17 +18,6 @@ var serviceUrl = gaScript.getAttribute('serviceurl');
 var trackingId = gaScript.getAttribute('trackingid');
 var uid = gaDocument.baseURI.split('?uid=')[1];
 
-function fireReadyEvent() {
-    if (!uid) {
-        return;
-    }
-    var event = new CustomEvent("importready" + uid, {
-        detail: getContainer("ga-main")
-    });
-
-    document.dispatchEvent(event);
-}
-
 function getContainer(containerId) {
     containerId = containerId + "_" + uid;
     return document.getElementById(containerId) || gaDocument.getElementById(containerId);
@@ -46,15 +35,11 @@ function setContainerVisible(containerId, visible) {
 function showAuthenticationError(errorMessage) {
     setContainerVisible('ga-not-authenticated', true).innerHTML = "Authentication failed" + (errorMessage ? ": " + errorMessage : "");
     setContainerVisible('ga-authenticated', false);
-
-    fireReadyEvent();
 }
 
 function showError(errorMessage) {
     setContainerVisible('ga-not-authenticated', true).innerHTML = "Error: " + errorMessage;
     setContainerVisible('ga-authenticated', false);
-
-    fireReadyEvent();
 }
 
 function queryAccounts() {
@@ -141,8 +126,6 @@ function getToken() {
         else if (responseObject.token) {
             setContainerVisible('ga-authenticated', true);
             setContainerVisible('ga-not-authenticated', false);
-
-            fireReadyEvent();
 
             authorize(responseObject.token);
         }

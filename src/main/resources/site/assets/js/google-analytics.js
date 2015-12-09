@@ -169,48 +169,26 @@ function showStatistics(viewId) {
     });
 
     /**
-     * List of pages sorted by pageviews
-     */
-    /*
-     var dataChart2 = new gapi.analytics.googleCharts.DataChart({
-     query: {
-     metrics: 'ga:uniquePageviews',
-     dimensions: 'ga:pageTitle',
-     'start-date': '30daysAgo',
-     'end-date': 'yesterday'
-     },
-     chart: {
-     container: 'chart-container-2',
-     type: 'TABLE',
-     options: {
-     title: 'Unique Pageviews',
-     height: '300px',
-     page: 'enable',
-     sortColumn: 1,
-     sortAscending: false
-     }
-     }
-     });
-     */
-
-    /**
-     * Pie chart by referer
+     * Top 10 pages with the most pageviews
      */
     var dataChart2 = new gapi.analytics.googleCharts.DataChart({
         query: {
             ids: viewId,
-            metrics: 'ga:users',
-            dimensions: 'ga:source',
+            metrics: 'ga:uniquePageviews',
+            dimensions: 'ga:pagePath',
             'start-date': '30daysAgo',
-            'end-date': 'yesterday'
+            'end-date': 'yesterday',
+            'max-results': 12,
+            'sort': '-ga:uniquePageviews'
         },
         chart: {
             container: getContainer("chart-container-2"),
             type: 'PIE',
             options: {
-                title: 'Traffic by Referer',
                 is3D: true,
-                width: '100%'
+                width: "100%",
+                height: "100%",
+                title: "Top Pages"
             }
         }
     });
@@ -259,11 +237,35 @@ function showStatistics(viewId) {
         }
     });
 
+    /**
+     * Pie chart by referer
+     */
+    var dataChart5 = new gapi.analytics.googleCharts.DataChart({
+        query: {
+            ids: viewId,
+            metrics: 'ga:users',
+            dimensions: 'ga:source',
+            'start-date': '30daysAgo',
+            'end-date': 'yesterday',
+            'max-results': 10,
+            'sort': '-ga:users'
+        },
+        chart: {
+            container: getContainer("chart-container-5"),
+            type: 'TABLE',
+            options: {
+                width: '100%',
+                height: "100%"
+            }
+        }
+    });
+
+
     dataChart1.execute();
     dataChart2.execute();
     dataChart3.execute();
     dataChart4.execute();
-
+    dataChart5.execute();
 }
 
 if (gapi.analytics.auth) {

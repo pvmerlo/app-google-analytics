@@ -1,14 +1,44 @@
-.ga-container {
+.widget-container > div {
     margin: 5px;
     float: left;
-    height: 300px;
+    height: 100%;
     width: 100%;
     box-shadow: 0 1px 2px 1px rgba(0, 0, 0, 0.1);
 }
-.ga-container .gapi-analytics-data-chart {
-    padding: 0 5px;
+
+.widget-container > div:empty {
+    height: 300px;
 }
 
-#ga-main, #ga-authenticated {
+.widget-container .gapi-analytics-data-chart {
+    padding: 0 5px;
+    background-color: #FFF;
+}
+
+#ga-authenticated {
     height: auto;
+}
+
+.widget-container .ga-traffic-by-referer .google-visualization-table:before {
+    content: "Top Referers";
+}
+
+.widget-container .ga-bycountry-container {
+    height: 300px;
+    overflow: hidden;
+}
+
+.widget-container .ga-bycountry-container .gapi-analytics-data-chart:before {
+    content: "Visitors by Country";
+}
+
+.widget-container .google-visualization-table:before,
+.widget-container .gapi-analytics-data-chart:before {
+    text-anchor: start;
+    font-family: Arial;
+    font-size: 16px;
+    stroke: none;
+    stroke-width: 0px;
+    fill: rgb(0, 0, 0);
+    line-height: 32px;
 }

@@ -16,11 +16,23 @@ var gaScript = getCurrentScript();
 var gaDocument = getDocument(gaScript);
 var serviceUrl = gaScript.getAttribute('serviceurl');
 var trackingId = gaScript.getAttribute('trackingid');
+var pageId = gaScript.getAttribute('pageid');
 var uid = gaDocument.baseURI.split('?uid=')[1];
 
 function getContainer(containerId) {
     containerId = containerId + "_" + uid;
     return document.getElementById(containerId) || gaDocument.getElementById(containerId);
+}
+
+function createContainerDiv(id, cls) {
+    var container = getContainer("ga-authenticated");
+    var div = gaDocument.createElement("div");
+
+    div.setAttribute("id", id + "_" + uid);
+    if (cls) {
+        div.setAttribute("class", cls);
+    }
+    container.appendChild(div);
 }
 
 function setContainerVisible(containerId, visible) {
@@ -100,7 +112,12 @@ function handleProfiles(response) {
         var viewId = response.result.items[0].id;
 
         // Show statistics for found View ID
-        showStatistics("ga:" + viewId);
+        if (pageId) {
+            showStatisticsForPage("ga:" + viewId);
+        }
+        else {
+            showStatisticsForSite("ga:" + viewId);
+        }
     } else {
         showError('No views (profiles) found for the user.');
     }
@@ -127,6 +144,19 @@ function getToken() {
             setContainerVisible('ga-authenticated', true);
             setContainerVisible('ga-not-authenticated', false);
 
+            if (pageId) {
+                createContainerDiv("chart-container-1");
+                createContainerDiv("chart-container-2");
+                createContainerDiv("chart-container-3");
+            }
+            else {
+                createContainerDiv("chart-container-1", "ga-traffic-by-date");
+                createContainerDiv("chart-container-2");
+                createContainerDiv("chart-container-3");
+                createContainerDiv("chart-container-4", "ga-bycountry-container");
+                createContainerDiv("chart-container-5", "ga-traffic-by-referer");
+            }
+
             authorize(responseObject.token);
         }
     };
@@ -146,14 +176,88 @@ function authorize(token) {
     queryAccounts();
 }
 
-function showStatistics(viewId) {
+function showStatisticsForPage(viewId) {
+
     /**
      * Line chart by sessions
      */
     var dataChart1 = new gapi.analytics.googleCharts.DataChart({
         query: {
             ids: viewId,
+            metrics: 'ga:pageViews,ga:uniquePageviews',
+            dimensions: 'ga:date',
+            'start-date': '30daysAgo',
+            'end-date': 'yesterday',
+            filters: 'ga:pagePath==' + pageId
+        },
+        chart: {
+            container: getContainer("chart-container-1"),
+            type: 'LINE',
+            options: {
+                title: 'Page views by date',
+                width: '100%'
+            }
+        }
+    });
+
+    /**
+     * Pie chart by user type (new vs returning)
+     */
+    var dataChart2 = new gapi.analytics.googleCharts.DataChart({
+        query: {
+            ids: viewId,
             metrics: 'ga:sessions',
+            dimensions: 'ga:userType',
+            'start-date': '30daysAgo',
+            'end-date': 'yesterday',
+            filters: 'ga:pagePath==' + pageId
+        },
+        chart: {
+            container: getContainer("chart-container-2"),
+            type: 'PIE',
+            options: {
+                is3D: true,
+                width: "100%",
+                height: "100%",
+                title: "Visitors"
+            }
+        }
+    });
+
+    /**
+     * Table with avg metrics
+     */
+    var dataChart3 = new gapi.analytics.googleCharts.DataChart({
+        query: {
+            ids: viewId,
+            metrics: 'ga:avgTimeOnPage,ga:avgPageLoadTime,ga:bounceRate',
+            'start-date': '30daysAgo',
+            'end-date': 'yesterday',
+            filters: 'ga:pagePath==' + pageId
+        },
+        chart: {
+            container: getContainer("chart-container-3"),
+            type: 'TABLE',
+            options: {
+                width: '100%',
+                height: "100%"
+            }
+        }
+    });
+
+    dataChart1.execute();
+    dataChart2.execute();
+    dataChart3.execute();
+}
+
+function showStatisticsForSite(viewId) {
+    /**
+     * Line chart by sessions
+     */
+    var dataChart1 = new gapi.analytics.googleCharts.DataChart({
+        query: {
+            ids: viewId,
+            metrics: 'ga:pageViews,ga:uniquePageviews',
             dimensions: 'ga:date',
             'start-date': '30daysAgo',
             'end-date': 'yesterday'
@@ -162,7 +266,7 @@ function showStatistics(viewId) {
             container: getContainer("chart-container-1"),
             type: 'LINE',
             options: {
-                title: 'Traffic by Date',
+                title: 'Page views by date',
                 width: '100%'
             }
         }
@@ -194,31 +298,31 @@ function showStatistics(viewId) {
     });
 
     /**
-     * Column chart by users/new users
+     * Pie chart by device type
      */
     var dataChart3 = new gapi.analytics.googleCharts.DataChart({
         query: {
             ids: viewId,
-            metrics: 'ga:users,ga:newUsers',
-            dimensions: 'ga:date',
+            metrics: 'ga:users',
+            dimensions: 'ga:deviceCategory',
             'start-date': '30daysAgo',
-            'end-date': 'yesterday'
+            'end-date': 'yesterday',
+            prettyPrint: 'true'
         },
         chart: {
             container: getContainer("chart-container-3"),
-            type: 'COLUMN',
+            type: 'BAR',
             options: {
-                title: 'Users by Date',
-                bar: { groupWidth: '75%' },
-                isStacked: true,
-                width: '100%'
+                width: "100%",
+                height: "100%",
+                title: "Devices"
             }
         }
     });
 
 
     /**
-     * Bar chart by countries
+     * Geo chart by countries
      */
     var dataChart4 = new gapi.analytics.googleCharts.DataChart({
         query: {

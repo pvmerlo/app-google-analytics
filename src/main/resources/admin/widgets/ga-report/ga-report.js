@@ -5,6 +5,13 @@ function handleGet(req) {
     var uid = req.url.split('?uid=')[1];
     var view = resolve('ga-report.html');
     var siteConfig = portal.getSiteConfig();
+    var content = portal.getContent();
+    var site = portal.getSite();
+    var pageId = "";
+
+    if (content.type.indexOf(":site") == -1) {
+        pageId = content._path.replace(site._path, "");
+    }
 
     var params = {
         googleAnalyticsCssUrl: portal.assetUrl({path: 'css/google-analytics.css'}),
@@ -12,7 +19,8 @@ function handleGet(req) {
         googleAnalyticsJsUrl: portal.assetUrl({path: 'js/google-analytics.js'}),
         serviceUrl: '/admin/rest/google-analytics/authenticate',
         trackingId: siteConfig && siteConfig.trackingId ? siteConfig.trackingId : "",
-        uid: uid
+        uid: uid,
+        pageId: pageId
     }
 
     return {

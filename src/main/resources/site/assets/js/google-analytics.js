@@ -18,14 +18,15 @@ var serviceUrl = gaScript.getAttribute('serviceurl');
 var trackingId = gaScript.getAttribute('trackingid');
 var pageId = gaScript.getAttribute('pageid');
 var uid = gaDocument.baseURI.split('?uid=')[1];
+var viewId;
 
 function getContainer(containerId) {
     containerId = containerId + "_" + uid;
     return document.getElementById(containerId) || gaDocument.getElementById(containerId);
 }
 
-function createContainerDiv(id, cls) {
-    var container = getContainer("ga-authenticated");
+function createContainerDiv(id, cls, parentId) {
+    var container = getContainer(parentId || "ga-authenticated");
     var div = gaDocument.createElement("div");
 
     div.setAttribute("id", id + "_" + uid);
@@ -33,6 +34,8 @@ function createContainerDiv(id, cls) {
         div.setAttribute("class", cls);
     }
     container.appendChild(div);
+
+    return div;
 }
 
 function setContainerVisible(containerId, visible) {
@@ -109,14 +112,14 @@ function handleProfiles(response) {
     // Handles the response from the profiles list method.
     if (response.result.items && response.result.items.length) {
         // Get the first View (Profile) ID.
-        var viewId = response.result.items[0].id;
+        viewId = "ga:" + response.result.items[0].id;
 
         // Show statistics for found View ID
         if (pageId) {
-            showStatisticsForPage("ga:" + viewId);
+            showStatisticsForPage();
         }
         else {
-            showStatisticsForSite("ga:" + viewId);
+            showStatisticsForSite();
         }
     } else {
         showError('No views (profiles) found for the user.');
@@ -147,14 +150,14 @@ function getToken() {
             if (pageId) {
                 createContainerDiv("chart-container-1");
                 createContainerDiv("chart-container-2");
-                createContainerDiv("chart-container-3");
+                createContainerDiv("chart-container-3", "ga-kpi-chart");
             }
             else {
-                createContainerDiv("chart-container-1", "ga-traffic-by-date");
+                createContainerDiv("chart-container-1");
                 createContainerDiv("chart-container-2");
-                createContainerDiv("chart-container-3");
+                createContainerDiv("chart-container-3", "ga-bydevice-container");
                 createContainerDiv("chart-container-4", "ga-bycountry-container");
-                createContainerDiv("chart-container-5", "ga-traffic-by-referer");
+                createContainerDiv("chart-container-5", "ga-byreferer-container");
             }
 
             authorize(responseObject.token);
@@ -176,200 +179,161 @@ function authorize(token) {
     queryAccounts();
 }
 
-function showStatisticsForPage(viewId) {
+function drawChart(containerId, config) {
+    var queryCfg = {
+            ids: viewId,
+            metrics: config.metrics,
+            dimensions: config.dimensions,
+            'start-date': '30daysAgo',
+            'end-date': 'yesterday'
+        };
+
+    if (config.filters) {
+        queryCfg.filters = config.filters;
+    }
+    if (config['max-results']) {
+        queryCfg['max-results'] = config['max-results'];
+    }
+    if (config.sort) {
+        queryCfg.sort = config.sort;
+    }
+
+    var chart = new gapi.analytics.googleCharts.DataChart({
+        query: queryCfg,
+        chart: {
+            container: getContainer(containerId),
+            type: config.type,
+            options: {
+                title: config.title,
+                width: '100%',
+                is3D: true
+            }
+        }
+    });
+
+    chart.execute();
+}
+
+function formatSeconds(seconds) {
+    var hours = parseInt( seconds / 3600 ) % 24;
+    var minutes = parseInt( seconds / 60 ) % 60;
+    var seconds = parseInt(seconds % 60);
+
+    return (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
+}
+
+function showStatisticsForPage() {
 
     /**
      * Line chart by sessions
      */
-    var dataChart1 = new gapi.analytics.googleCharts.DataChart({
-        query: {
-            ids: viewId,
-            metrics: 'ga:pageViews,ga:uniquePageviews',
-            dimensions: 'ga:date',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday',
-            filters: 'ga:pagePath==' + pageId
-        },
-        chart: {
-            container: getContainer("chart-container-1"),
-            type: 'LINE',
-            options: {
-                title: 'Page views by date',
-                width: '100%'
-            }
-        }
+    drawChart("chart-container-1", {
+        title: 'Page views by date',
+        type: 'LINE',
+        metrics: 'ga:pageViews,ga:uniquePageviews',
+        dimensions: 'ga:date',
+        filters: 'ga:pagePath==' + pageId
     });
 
     /**
      * Pie chart by user type (new vs returning)
      */
-    var dataChart2 = new gapi.analytics.googleCharts.DataChart({
-        query: {
-            ids: viewId,
-            metrics: 'ga:sessions',
-            dimensions: 'ga:userType',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday',
-            filters: 'ga:pagePath==' + pageId
-        },
-        chart: {
-            container: getContainer("chart-container-2"),
-            type: 'PIE',
-            options: {
-                is3D: true,
-                width: "100%",
-                height: "100%",
-                title: "Visitors"
-            }
-        }
+    drawChart("chart-container-2", {
+        title: "Visitors",
+        type: 'PIE',
+        metrics: 'ga:sessions',
+        dimensions: 'ga:userType',
+        filters: 'ga:pagePath==' + pageId
     });
 
     /**
      * Table with avg metrics
      */
-    var dataChart3 = new gapi.analytics.googleCharts.DataChart({
+    var kpiRequest = new gapi.analytics.report.Data({
         query: {
             ids: viewId,
             metrics: 'ga:avgTimeOnPage,ga:avgPageLoadTime,ga:bounceRate',
             'start-date': '30daysAgo',
             'end-date': 'yesterday',
             filters: 'ga:pagePath==' + pageId
-        },
-        chart: {
-            container: getContainer("chart-container-3"),
-            type: 'TABLE',
-            options: {
-                width: '100%',
-                height: "100%"
-            }
         }
     });
 
-    dataChart1.execute();
-    dataChart2.execute();
-    dataChart3.execute();
+    kpiRequest.on("success", onKPILoaded);
+
+    kpiRequest.execute();
 }
 
-function showStatisticsForSite(viewId) {
+function onKPILoaded(response) {
+    if (response.totalsForAllResults) {
+        createContainerDiv("kpi-container-data", "ga-kpi-container-data", "chart-container-3");
+        var textContainer = createContainerDiv("kpi-container-text", "ga-kpi-container-text", "chart-container-3");
+
+        var container = createContainerDiv("kpi-container-1", "ga-kpi-container", "kpi-container-data");
+        container.innerHTML = "<div>" + parseFloat(response.totalsForAllResults["ga:avgPageLoadTime"]).toFixed(2) + "</div>";
+
+        container = createContainerDiv("kpi-container-2", "ga-kpi-container", "kpi-container-data");
+        container.innerHTML = "<div>" + formatSeconds(response.totalsForAllResults["ga:avgTimeOnPage"]) + "</div>";
+
+        container = createContainerDiv("kpi-container-3", "ga-kpi-container", "kpi-container-data");
+        container.innerHTML = "<div>" + parseFloat(response.totalsForAllResults["ga:bounceRate"]).toFixed(2) + "%</div>";
+
+        textContainer.innerHTML = "<span>Avg.load time (sec)</span><span>Avg.time on page</span><span>Bounce rate</span>";
+    }
+}
+
+function showStatisticsForSite() {
     /**
      * Line chart by sessions
      */
-    var dataChart1 = new gapi.analytics.googleCharts.DataChart({
-        query: {
-            ids: viewId,
-            metrics: 'ga:pageViews,ga:uniquePageviews',
-            dimensions: 'ga:date',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday'
-        },
-        chart: {
-            container: getContainer("chart-container-1"),
-            type: 'LINE',
-            options: {
-                title: 'Page views by date',
-                width: '100%'
-            }
-        }
+    drawChart("chart-container-1", {
+        title: "Page views by date",
+        type: 'LINE',
+        metrics: 'ga:pageViews,ga:uniquePageviews',
+        dimensions: 'ga:date'
     });
 
     /**
-     * Top 10 pages with the most pageviews
+     * Pie chart with most popular pages
      */
-    var dataChart2 = new gapi.analytics.googleCharts.DataChart({
-        query: {
-            ids: viewId,
-            metrics: 'ga:uniquePageviews',
-            dimensions: 'ga:pagePath',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday',
-            'max-results': 12,
-            'sort': '-ga:uniquePageviews'
-        },
-        chart: {
-            container: getContainer("chart-container-2"),
-            type: 'PIE',
-            options: {
-                is3D: true,
-                width: "100%",
-                height: "100%",
-                title: "Top Pages"
-            }
-        }
+    drawChart("chart-container-2", {
+        title: "Top Pages",
+        type: 'PIE',
+        metrics: 'ga:uniquePageviews',
+        dimensions: 'ga:pagePath',
+        'max-results': 12,
+        'sort': '-ga:uniquePageviews'
     });
 
     /**
-     * Pie chart by device type
+     * Bar chart by device type
      */
-    var dataChart3 = new gapi.analytics.googleCharts.DataChart({
-        query: {
-            ids: viewId,
-            metrics: 'ga:users',
-            dimensions: 'ga:deviceCategory',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday',
-            prettyPrint: 'true'
-        },
-        chart: {
-            container: getContainer("chart-container-3"),
-            type: 'BAR',
-            options: {
-                width: "100%",
-                height: "100%",
-                title: "Devices"
-            }
-        }
+    drawChart("chart-container-3", {
+        title: "Devices",
+        type: 'BAR',
+        metrics: 'ga:users',
+        dimensions: 'ga:deviceCategory'
     });
-
 
     /**
      * Geo chart by countries
      */
-    var dataChart4 = new gapi.analytics.googleCharts.DataChart({
-        query: {
-            ids: viewId,
-            metrics: 'ga:users',
-            dimensions: 'ga:country',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday'
-        },
-        chart: {
-            container: getContainer("chart-container-4"),
-            type: 'GEO',
-            options: {
-                width: '100%'
-            }
-        }
+    drawChart("chart-container-4", {
+        type: 'GEO',
+        metrics: 'ga:users',
+        dimensions: 'ga:country'
     });
 
     /**
-     * Pie chart by referer
+     * Table with top 10 referers
      */
-    var dataChart5 = new gapi.analytics.googleCharts.DataChart({
-        query: {
-            ids: viewId,
-            metrics: 'ga:users',
-            dimensions: 'ga:source',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday',
-            'max-results': 10,
-            'sort': '-ga:users'
-        },
-        chart: {
-            container: getContainer("chart-container-5"),
-            type: 'TABLE',
-            options: {
-                width: '100%',
-                height: "100%"
-            }
-        }
+    drawChart("chart-container-5", {
+        type: 'TABLE',
+        metrics: 'ga:users',
+        dimensions: 'ga:source',
+        'max-results': 10,
+        'sort': '-ga:users'
     });
-
-
-    dataChart1.execute();
-    dataChart2.execute();
-    dataChart3.execute();
-    dataChart4.execute();
-    dataChart5.execute();
 }
 
 if (gapi.analytics.auth) {

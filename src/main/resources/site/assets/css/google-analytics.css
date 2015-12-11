@@ -19,7 +19,7 @@
     height: auto;
 }
 
-.widget-container .ga-traffic-by-referer .google-visualization-table:before {
+.widget-container .ga-byreferer-container .google-visualization-table:before {
     content: "Top Referers";
 }
 
@@ -32,8 +32,24 @@
     content: "Visitors by Country";
 }
 
+.widget-container .ga-kpi-chart:not(:empty):before {
+    content: "Page KPIs";
+    margin-left: 5px;
+}
+
+.widget-container .ga-bydevice-container rect[x="1"]:nth-child(1) {
+    fill: rgb(51,102,204);
+}
+.widget-container .ga-bydevice-container rect[x="1"]:nth-child(2) {
+    fill: rgb(220,57,18);
+}
+.widget-container .ga-bydevice-container rect[x="1"]:nth-child(3) {
+    fill: rgb(16,150,24);
+}
+
 .widget-container .google-visualization-table:before,
-.widget-container .gapi-analytics-data-chart:before {
+.widget-container .gapi-analytics-data-chart:before,
+.widget-container .ga-kpi-chart:before {
     text-anchor: start;
     font-family: Arial;
     font-size: 16px;
@@ -41,4 +57,54 @@
     stroke-width: 0px;
     fill: rgb(0, 0, 0);
     line-height: 32px;
+}
+
+.ga-kpi-container-data {
+    height: auto;
+}
+
+.ga-kpi-container {
+    width: 29%;
+    margin: 5px;
+    float: left;
+}
+.ga-kpi-container:after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 0;
+    padding-top: 100%;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}
+.ga-kpi-container div {
+    float: left;
+    width: 100%;
+    padding-top: 50%;
+    margin-top: -0.5em;
+    text-align: center;
+    color: black;
+    padding-left: 4px;
+    font-size: 18px;
+}
+
+.ga-kpi-container:nth-child(1):after {
+    border: solid rgb(51, 102, 204);
+}
+
+.ga-kpi-container:nth-child(2):after {
+    border: solid rgb(220, 57, 18);
+}
+
+.ga-kpi-container:nth-child(3):after {
+    border: solid rgb(16, 150, 24);
+}
+
+.ga-kpi-container-text span{
+    width: 29%;
+    display: inline-block;
+    text-align: center;
+    vertical-align: top;
+    margin: 5px;
 }

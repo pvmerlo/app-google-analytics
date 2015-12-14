@@ -114,6 +114,25 @@ function handleProfiles(response) {
         // Get the first View (Profile) ID.
         viewId = "ga:" + response.result.items[0].id;
 
+        /**
+         * Query params representing the first chart's date range.
+         */
+        var dateRange = {
+            'start-date': '30daysAgo',
+            'end-date': 'yesterday'
+        };
+
+        /**
+         * Create a new DateRangeSelector instance to be rendered inside of an
+         * element with the id "date-range-container", set its date range
+         * and then render it to the page.
+         */
+        var dateRangeSelector = new gapi.analytics.ext.DateRangeSelector({
+            container: getContainer("date-range-container")
+        })
+        .set(dateRange)
+        .execute();
+
         // Show statistics for found View ID
         if (pageId) {
             showStatisticsForPage();
@@ -146,6 +165,8 @@ function getToken() {
         else if (responseObject.token) {
             setContainerVisible('ga-authenticated', true);
             setContainerVisible('ga-not-authenticated', false);
+
+            createContainerDiv("date-range-container");
 
             if (pageId) {
                 createContainerDiv("chart-container-1");

@@ -108,3 +108,29 @@
     vertical-align: top;
     margin: 5px;
 }
+
+.widget-container .DateRangeSelector {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+.widget-container .DateRangeSelector-item {
+    margin: 0.5em 0;
+    margin-left: 0.25em;
+    width: 48%;
+}
+
+.widget-container .DateRangeSelector-item > label {
+    font-weight: 700;
+    margin: 0 .25em .25em 0;
+    display: block;
+}
+
+.widget-container .DateRangeSelector-item > input {
+    width: 88%;
+    max-width: 150px;
+}

@@ -21,6 +21,14 @@ var uid = gaDocument.baseURI.split('?uid=')[1];
 var viewId;
 var dataCharts = [];
 
+function createTitle() {
+    var container = getContainer("ga-authenticated");
+    var title = gaDocument.createElement("h1");
+    title.innerHTML = "Statistics for the " + (pageId ? "page" : "site");
+
+    container.appendChild(title);
+}
+
 function getContainer(containerId) {
     containerId = containerId + "_" + uid;
     return document.getElementById(containerId) || gaDocument.getElementById(containerId);
@@ -233,6 +241,7 @@ function getToken() {
             setContainerVisible('ga-authenticated', true);
             setContainerVisible('ga-not-authenticated', false);
 
+            createTitle();
             createContainerDiv("date-range-container");
 
             if (pageId) {

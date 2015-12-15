@@ -120,8 +120,10 @@
 }
 .widget-container .DateRangeSelector-item {
     margin: 0.5em 0;
-    margin-left: 0.25em;
-    width: 48%;
+}
+
+.widget-container .DateRangeSelector-item {
+    max-width: 130px;
 }
 
 .widget-container .DateRangeSelector-item > label {
@@ -130,7 +132,11 @@
     display: block;
 }
 
-.widget-container .DateRangeSelector-item > input {
-    width: 88%;
-    max-width: 150px;
+.widget-container .DateRangeSelector-item:nth-child(1) {
+    margin-right: 5px;
+    margin-left: 0.25em;
+}
+
+.widget-container .DateRangeSelector-item:nth-child(2) > input {
+    max-width: 125px;
 }

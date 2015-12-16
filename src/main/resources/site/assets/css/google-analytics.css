@@ -142,6 +142,10 @@
     margin-left: 0.25em;
 }
 
+.widget-container .DateRangeSelector-item:nth-child(1) input {
+    max-width: 115px;
+}
+
 .widget-container h1 {
     color: #000;
     margin: 5px;

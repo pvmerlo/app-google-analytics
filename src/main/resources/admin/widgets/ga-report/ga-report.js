@@ -9,7 +9,7 @@ function handleGet(req) {
     var site = portal.getSite();
     var pageId = "";
 
-    if (content.type.indexOf(":site") == -1) {
+    if (content.type.indexOf(":site") == -1 && !!site) {
         pageId = content._path.replace(site._path, "");
     }
 

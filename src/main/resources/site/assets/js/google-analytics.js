@@ -21,55 +21,7 @@ var uid = gaDocument.baseURI.split('?uid=')[1];
 var viewId;
 var dataCharts = [];
 
-function createTitle() {
-    var container = getContainer("ga-authenticated");
-    var title = gaDocument.createElement("h1");
-    title.innerHTML = "Statistics for the " + (pageId ? "page" : "site");
-
-    container.appendChild(title);
-}
-
-function getContainer(containerId) {
-    containerId = containerId + "_" + uid;
-    return document.getElementById(containerId) || gaDocument.getElementById(containerId);
-}
-
-function createContainerDiv(id, cls, parentId) {
-    var divId = id + "_" + uid;
-    var container = getContainer(parentId || "ga-authenticated");
-    var div = container.querySelector("#" + divId);
-
-    if (!div) {
-        div = gaDocument.createElement("div");
-
-        div.setAttribute("id", divId);
-        if (cls) {
-            div.setAttribute("class", cls);
-        }
-        container.appendChild(div);
-    }
-
-    return div;
-}
-
-function setContainerVisible(containerId, visible) {
-    var container = getContainer(containerId);
-    if (container) {
-        container.hidden = !visible;
-    }
-
-    return container;
-}
-
-function showAuthenticationError(errorMessage) {
-    setContainerVisible('ga-not-authenticated', true).innerHTML = "Authentication failed" + (errorMessage ? ": " + errorMessage : "");
-    setContainerVisible('ga-authenticated', false);
-}
-
-function showError(errorMessage) {
-    setContainerVisible('ga-not-authenticated', true).innerHTML = "Error: " + errorMessage;
-    setContainerVisible('ga-authenticated', false);
-}
+// GA API BEGIN
 
 function queryAccounts() {
     gapi.client.analytics.management.accounts.list().then(handleAccounts);
@@ -121,89 +73,13 @@ function queryProfiles(accountId, propertyId) {
         });
 }
 
-function createCookie(name, value, days) {
-    var expires = "";
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime()+(days*24*60*60*1000));
-        var expires = "; expires="+date.toGMTString();
-    }
-
-    document.cookie = "ga_" + name + "=" + value + expires + "; path=/";
-}
-
-function saveUidInCookie() {
-    createCookie("uid", uid);
-}
-
-function saveDateRangeInCookie(dateRange) {
-    createCookie(uid + ".start-date", dateRange["start-date"]);
-    createCookie(uid + ".end-date", dateRange["end-date"]);
-}
-
-function getDateFromCookie(name) {
-    return getCookie(uid + "." + name);
-}
-
-function getCookie(cname) {
-    var name = "ga_" + cname + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0; i<ca.length; i++) {
-        var c = ca[i].trim();
-        if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
-    }
-    return "";
-}
-
-function getDateRange() {
-    return {
-        'start-date': getDateFromCookie('start-date') || '30daysAgo',
-        'end-date': getDateFromCookie('end-date') || 'yesterday'
-    };
-}
-
-function cleanupCookies() {
-    var tempUid = getCookie("uid");
-
-    if (tempUid && tempUid != uid) {
-        createCookie("uid", tempUid, -1);
-        createCookie(tempUid + ".start-date", "", -1);
-        createCookie(tempUid + ".end-date", "", -1);
-    }
-
-    if (!tempUid || tempUid != uid) {
-        saveUidInCookie(uid);
-    }
-}
-
 function handleProfiles(response) {
     // Handles the response from the profiles list method.
     if (response.result.items && response.result.items.length) {
         // Get the first View (Profile) ID.
         viewId = "ga:" + response.result.items[0].id;
 
-        /**
-         * Create a new DateRangeSelector instance to be rendered inside of an
-         * element with the id "date-range-container", set its date range
-         * and then render it to the page.
-         */
-        var dateRangeSelector = new gapi.analytics.ext.DateRangeSelector({
-            container: getContainer("date-range-container")
-        })
-        .set(getDateRange())
-        .execute();
-
-        /**
-         * Register a handler to run whenever the user changes the date range from
-         * the datepicker. The handler will update the first dataChart
-         * instance as well as change the dashboard subtitle to reflect the range.
-         */
-        dateRangeSelector.on('change', function(data) {
-            saveDateRangeInCookie(data);
-            dataCharts.forEach(function (dataChart) {
-                dataChart.set({query: data}).execute();
-            });
-        });
+        initDatePicker();
 
         // Show statistics for found View ID
         if (pageId) {
@@ -242,7 +118,6 @@ function getToken() {
             setContainerVisible('ga-not-authenticated', false);
 
             createTitle();
-            createContainerDiv("date-range-container");
 
             if (pageId) {
                 createContainerDiv("chart-container-1");
@@ -252,8 +127,11 @@ function getToken() {
             else {
                 createContainerDiv("chart-container-1");
                 createContainerDiv("chart-container-2");
-                createContainerDiv("chart-container-3", "ga-bydevice-container");
-                createContainerDiv("chart-container-4", "ga-bycountry-container");
+                createContainerDiv("chart-container-2-1", "ga-vertical-container", "chart-container-2");
+                createContainerDiv("chart-container-2-2", "ga-vertical-container", "chart-container-2");
+
+                createContainerDiv("chart-container-3", "ga-bycountry-container");
+                createContainerDiv("chart-container-4", "ga-bypage-container");
                 createContainerDiv("chart-container-5", "ga-byreferer-container");
             }
 
@@ -275,14 +153,15 @@ function authorize(token) {
 
     queryAccounts();
 }
+// GA API END
+
+// DRAW CHART BEGIN
 
 function drawChart(containerId, config) {
     var queryCfg = {
             ids: viewId,
             metrics: config.metrics,
-            dimensions: config.dimensions,
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday'
+            dimensions: config.dimensions
         };
 
     if (config.filters) {
@@ -308,9 +187,27 @@ function drawChart(containerId, config) {
         }
     });
 
+    if (config.width) {
+        chart.set({ chart: { options: { legend: { position: 'none' }, chartArea: { width: config.width } } } });
+    }
+
     dataCharts.push(chart);
 
-    chart.execute();
+    setDateAndDrawChart(chart);
+}
+
+function setDateAndDrawChart(chart) {
+    chart.set(getDateRangeObject()).execute();
+}
+
+function getDateRangeObject() {
+    var startDate = getStartDate(getDateFromCookie('start-date') || '7daysAgo');
+    return {
+        query: {
+            'start-date': startDate,
+            'end-date': getDateFromCookie('end-date') || 'today'
+        }
+    };
 }
 
 function formatSeconds(seconds) {
@@ -327,7 +224,7 @@ function showStatisticsForPage() {
      * Line chart by sessions
      */
     drawChart("chart-container-1", {
-        title: 'Page views by date',
+        title: 'Pageviews by Date',
         type: 'LINE',
         metrics: 'ga:pageViews,ga:uniquePageviews',
         dimensions: 'ga:date',
@@ -352,8 +249,6 @@ function showStatisticsForPage() {
         query: {
             ids: viewId,
             metrics: 'ga:avgTimeOnPage,ga:avgPageLoadTime,ga:bounceRate',
-            'start-date': '30daysAgo',
-            'end-date': 'yesterday',
             filters: 'ga:pagePath==' + pageId
         }
     });
@@ -362,7 +257,7 @@ function showStatisticsForPage() {
 
     kpiRequest.on("success", onKPILoaded);
 
-    kpiRequest.execute();
+    kpiRequest.set(getDateRangeObject()).execute();
 }
 
 function onKPILoaded(response) {
@@ -388,41 +283,53 @@ function showStatisticsForSite() {
      * Line chart by sessions
      */
     drawChart("chart-container-1", {
-        title: "Page views by date",
-        type: 'LINE',
-        metrics: 'ga:pageViews,ga:uniquePageviews',
+        title: "Site Users",
+        type: 'COLUMN',
+        metrics: 'ga:Users, ga:newUsers',
         dimensions: 'ga:date'
     });
 
     /**
-     * Pie chart with most popular pages
+     * Pie chart by device
      */
-    drawChart("chart-container-2", {
-        title: "Top Pages",
+    drawChart("chart-container-2-1", {
+        title: "Devices",
         type: 'PIE',
-        metrics: 'ga:uniquePageviews',
-        dimensions: 'ga:pagePath',
-        'max-results': 12,
-        'sort': '-ga:uniquePageviews'
+        metrics: 'ga:sessions',
+        dimensions: 'ga:deviceCategory',
+        width: "90%"
     });
 
     /**
-     * Bar chart by device type
+     * Pie chart by browser
      */
-    drawChart("chart-container-3", {
-        title: "Devices",
-        type: 'BAR',
-        metrics: 'ga:users',
-        dimensions: 'ga:deviceCategory'
+    drawChart("chart-container-2-2", {
+        title: "Browsers",
+        type: 'PIE',
+        metrics: 'ga:sessions',
+        dimensions: 'ga:browser',
+        width: "90%",
+        'sort': '-ga:sessions'
     });
 
     /**
      * Geo chart by countries
      */
-    drawChart("chart-container-4", {
+    drawChart("chart-container-3", {
         type: 'GEO',
         metrics: 'ga:users',
         dimensions: 'ga:country'
+    });
+
+    /**
+     * Table with top 10 pages
+     */
+    drawChart("chart-container-4", {
+        type: 'TABLE',
+        metrics: 'ga:uniquePageviews',
+        dimensions: 'ga:pagePath',
+        'max-results': 10,
+        'sort': '-ga:uniquePageviews'
     });
 
     /**
@@ -436,6 +343,166 @@ function showStatisticsForSite() {
         'sort': '-ga:users'
     });
 }
+
+// DRAW CHART END
+
+// COOKIES BEGIN
+
+function createCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+
+    document.cookie = "ga_" + name + "=" + value + expires + "; path=/";
+}
+
+function saveUidInCookie() {
+    createCookie("uid", uid);
+}
+
+function saveDateInCookie(date) {
+    createCookie(uid + ".start-date", date);
+}
+
+function getDateFromCookie(name) {
+    return getCookie(uid + "." + name);
+}
+
+function getCookie(cname) {
+    var name = "ga_" + cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i].trim();
+        if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+    }
+    return "";
+}
+
+function cleanupCookies() {
+    var tempUid = getCookie("uid");
+
+    if (tempUid && tempUid != uid) {
+        createCookie("uid", tempUid, -1);
+        createCookie(tempUid + ".start-date", "", -1);
+        createCookie(tempUid + ".end-date", "", -1);
+    }
+
+    if (!tempUid || tempUid != uid) {
+        saveUidInCookie(uid);
+    }
+}
+
+// COOKIES END
+
+// DATE PICKER BEGIN
+
+function dateToString(date) {
+    var sDay = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate().toString();
+    var sMonth = date.getMonth() + 1;
+    sMonth = (sMonth < 10) ? "0" + sMonth : sMonth.toString();
+
+    return date.getFullYear() + "-" + sMonth + "-" + sDay;
+}
+
+function getFirstDateOfPeriod(delta) {
+    var date = new Date;
+    date = new Date(date.setDate(date.getDate() - delta + 1));
+
+    return dateToString(date);
+}
+
+function getFirstDateOfYear() {
+    var date = new Date;
+    return date.getFullYear() + "-01-01";
+}
+
+function initDatePicker() {
+    var container = getContainer("ga-authenticated").querySelector("#date-range-container");
+    var select = container.querySelector("select");
+    select.hidden = false;
+    if (getDateFromCookie('start-date')) {
+        select.value = getDateFromCookie('start-date');
+    }
+    select.onchange = onDateSelected;
+}
+
+function getStartDate(date) {
+    if (date == "thisWeek") {
+        return getFirstDateOfPeriod((new Date).getDay());
+    }
+    else if (date == "thisMonth") {
+        return getFirstDateOfPeriod((new Date).getDate());
+    }
+    else if (date == "thisYear") {
+        return getFirstDateOfYear();
+    }
+
+    return date;
+}
+
+function onDateSelected(e) {
+    saveDateInCookie(e.target.value);
+    dataCharts.forEach(function (dataChart) {
+        setDateAndDrawChart(dataChart);
+    });
+}
+
+// DATE PICKER END
+
+// DOM ELEMENTS BEGIN
+
+function createTitle() {
+    var container = getContainer("ga-authenticated").querySelector("#date-range-container");
+    var title = container.querySelector("span");
+    title.innerHTML = "Statistics for the " + (pageId ? "page" : "site");
+}
+
+function getContainer(containerId) {
+    containerId = containerId + "_" + uid;
+    return document.getElementById(containerId) || gaDocument.getElementById(containerId);
+}
+
+function createContainerDiv(id, cls, parentId) {
+    var divId = id + "_" + uid;
+    var container = getContainer(parentId || "ga-authenticated");
+    var div = container.querySelector("#" + divId);
+
+    if (!div) {
+        div = gaDocument.createElement("div");
+
+        div.setAttribute("id", divId);
+        if (cls) {
+            div.setAttribute("class", cls);
+        }
+        container.appendChild(div);
+    }
+
+    return div;
+}
+
+function setContainerVisible(containerId, visible) {
+    var container = getContainer(containerId);
+    if (container) {
+        container.hidden = !visible;
+    }
+
+    return container;
+}
+
+function showAuthenticationError(errorMessage) {
+    setContainerVisible('ga-not-authenticated', true).innerHTML = "Authentication failed" + (errorMessage ? ": " + errorMessage : "");
+    setContainerVisible('ga-authenticated', false);
+}
+
+function showError(errorMessage) {
+    setContainerVisible('ga-not-authenticated', true).innerHTML = "Error: " + errorMessage;
+    setContainerVisible('ga-authenticated', false);
+}
+
+// DOM ELEMENTS END
 
 if (gapi.analytics.auth) {
     getToken();

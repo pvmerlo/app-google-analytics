@@ -1,10 +1,21 @@
 <body>
 <div>
     <link rel="stylesheet" th:href="${googleAnalyticsCssUrl}" type="text/css"/>
-    <div data-th-id="'ga-authenticated_' + ${uid}" th:class="widget-container" hidden="true"></div>
+    <div data-th-id="'ga-authenticated_' + ${uid}" th:class="widget-container" hidden="true">
+        <div data-th-id="date-range-container" class="date-range-container">
+            <span></span>
+            <select data-th-id="start-date" hidden="true">
+                <option value="7daysAgo">Last 7 days</option>
+                <option value="30daysAgo">Last 30 days</option>
+                <option value="365daysAgo">Last 365 days</option>
+                <option value="thisWeek">This week</option>
+                <option value="thisMonth">This month</option>
+                <option value="thisYear">This year</option>
+            </select>
+        </div>
+    </div>
     <div data-th-id="'ga-not-authenticated_' + ${uid}" th:class="error" hidden="true"></div>
 </div>
 </body>
 <script th:src="${embedApiJsUrl}" type="text/javascript"></script>
 <script th:src="${googleAnalyticsJsUrl}" type="text/javascript" th:attr="serviceurl=${serviceUrl},trackingid=${trackingId},pageid=${pageId}"></script>
-<script src="https://ga-dev-tools.appspot.com/public/javascript/embed-api/components/date-range-selector.js"></script>

@@ -168,4 +168,7 @@
 
 .widget-container .date-range-container select {
     -webkit-appearance: menulist;
+    -webkit-border-radius: 5px;
+    -moz-appearance: menulist;
+    -moz-border-radius: -1px;
 }

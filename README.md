@@ -12,7 +12,7 @@ Here's the documentation for this application:
 
 | App version | Required XP version | Download | 
 | ----------- | ------------------- | -------- |
-| 1.2.0 | 6.3.0 | (http://repo.enonic.com/public/com/enonic/theme/superhero/1.1.0/superhero-1.1.0.jar) |
+| 1.2.0 | 6.3.0 | ... |
 
 ## Building and deploying
 

@@ -11,7 +11,7 @@ Here's the documentation for this application:
 ## Releases and Compatibility
 
 | App version | Required XP version | Download | 
-| - | - | - |
+| ----------- | ------------------- | -------- |
 | 1.2.0 | 6.3.0 | (http://repo.enonic.com/public/com/enonic/theme/superhero/1.1.0/superhero-1.1.0.jar) |
 
 ## Building and deploying

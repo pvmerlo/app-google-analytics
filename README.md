@@ -12,7 +12,7 @@ Here's the documentation for this application:
 
 | App version | Required XP version | Download | 
 | ----------- | ------------------- | -------- |
-| 1.2.0 | 6.3.0 | ... |
+| 1.0.0 | 6.3.0 | ... |
 
 ## Building and deploying
 

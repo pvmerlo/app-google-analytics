@@ -10,9 +10,10 @@ Here's the documentation for this application:
 
 ## Releases and Compatibility
 
-| App version | Required XP version | Download | 
+| App version | Required XP version | Download |
 | ----------- | ------------------- | -------- |
 | 1.2.0 | 6.3.0 | ... |
+
 
 ## Building and deploying
 

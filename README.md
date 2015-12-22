@@ -1,5 +1,4 @@
-# app-google-analytics
-### App for integration with Google Analytics
+# App for integration with Google Analytics
 
 *This guide assumes that you already have an account with Google Analytics, enabled tracking for at least one website (called “Property” in the GA admin dashboard) and created at least one view for the website. If not, please [refer to guidelines](https://www.google.com/analytics/) to set up Google Analytics first. Before you proceed with integration, your admin dashboard should look something like this:*
 

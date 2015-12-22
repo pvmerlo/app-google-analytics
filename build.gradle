@@ -15,7 +15,6 @@ buildscript {
 apply plugin: 'maven'
 apply plugin: 'com.enonic.xp.app'
 
-
 app {
     name = project.appName
     displayName = project.displayName

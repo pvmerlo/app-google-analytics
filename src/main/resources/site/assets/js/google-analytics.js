@@ -19,7 +19,7 @@
     var serviceUrl = gaScript.getAttribute('serviceurl');
     var trackingId = gaScript.getAttribute('trackingid');
     var pageId = gaScript.getAttribute('pageid');
-    var uid = gaDocument.baseURI.split('?uid=')[1];
+    var ga_uid = gaDocument.baseURI.split('?uid=')[1];
     var viewId;
     var dataCharts = [];
 
@@ -364,15 +364,15 @@
     }
 
     function saveUidInCookie() {
-        createCookie("uid", uid);
+        createCookie("uid", ga_uid);
     }
 
     function saveDateInCookie(date) {
-        createCookie(uid + ".start-date", date);
+        createCookie(ga_uid + ".start-date", date);
     }
 
     function getDateFromCookie(name) {
-        return getCookie(uid + "." + name);
+        return getCookie(ga_uid + "." + name);
     }
 
     function getCookie(cname) {
@@ -388,14 +388,14 @@
     function cleanupCookies() {
         var tempUid = getCookie("uid");
 
-        if (tempUid && tempUid != uid) {
+        if (tempUid && tempUid != ga_uid) {
             createCookie("uid", tempUid, -1);
             createCookie(tempUid + ".start-date", "", -1);
             createCookie(tempUid + ".end-date", "", -1);
         }
 
-        if (!tempUid || tempUid != uid) {
-            saveUidInCookie(uid);
+        if (!tempUid || tempUid != ga_uid) {
+            saveUidInCookie(ga_uid);
         }
     }
 
@@ -465,12 +465,12 @@
     }
 
     function getContainer(containerId) {
-        containerId = containerId + "_" + uid;
+        containerId = containerId + "_" + ga_uid;
         return document.getElementById(containerId) || gaDocument.getElementById(containerId);
     }
 
     function createContainerDiv(id, cls, parentId) {
-        var divId = id + "_" + uid;
+        var divId = id + "_" + ga_uid;
         var container = getContainer(parentId || "ga-authenticated");
         var div = container.querySelector("#" + divId);
 

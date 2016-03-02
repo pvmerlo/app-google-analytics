@@ -8,10 +8,6 @@ exports.responseFilter = function (req, res) {
     if (trackingID != '' && enableTracking) {
         // Only add snippet if in live mode
         if (req.mode === 'live') {
-            if (!res.pageContributions.headEnd) {
-                res.pageContributions.headEnd = [];
-            }
-
             var snippet = '<!-- Google Analytics -->';
             snippet += '<script>';
             snippet += '(function(i,s,o,g,r,a,m){i[\'GoogleAnalyticsObject\']=r;i[r]=i[r]||function(){';
@@ -23,10 +19,16 @@ exports.responseFilter = function (req, res) {
             snippet += '</script>';
             snippet += '<!-- End Google Analytics -->';
 
+            var headEnd = res.pageContributions.headEnd;
+            if(!headEnd) {
+                res.pageContributions.headEnd = [];
+            }
+            else if(headEnd instanceof String) {
+                res.pageContributions.headEnd = [ headEnd ];
+            }
+
             res.pageContributions.headEnd.push(snippet);
         }
     }
     return res;
 };
-
-

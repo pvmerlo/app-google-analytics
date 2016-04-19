@@ -12,9 +12,9 @@ Here's the documentation for this application:
 
 | App version | Required XP version | Download |
 | ----------- | ------------------- | -------- |
-| 1.3.0 | 6.4.0 | [Download](http://repo.enonic.com/public/com/enonic/app/app-google-analytics/1.3.0/app-google-analytics-1.3.0.jar) |
-| 1.2.0 | 6.3.1 | [Download](http://repo.enonic.com/public/com/enonic/app/app-google-analytics/1.2.0/app-google-analytics-1.2.0.jar) |
-| 1.0.0 | 6.3.0 | [Download](http://repo.enonic.com/public/com/enonic/app/app-google-analytics/1.0.0/app-google-analytics-1.0.0.jar) |
+| 1.3.0 | 6.4.0 | [Download](http://repo.enonic.com/public/com/enonic/app/ga/1.3.0/ga-1.3.0.jar) |
+| 1.2.0 | 6.3.1 | [Download](http://repo.enonic.com/public/com/enonic/app/ga/1.2.0/ga-1.2.0.jar) |
+| 1.1.0 | 6.3.0 | [Download](http://repo.enonic.com/public/com/enonic/app/ga/1.1.0/ga-1.1.0.jar) |
 
 
 ## Building and deploying

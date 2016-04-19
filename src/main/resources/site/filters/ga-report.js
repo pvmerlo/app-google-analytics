@@ -28,8 +28,8 @@ exports.responseFilter = function (req, res) {
     if(!headEnd) {
         res.pageContributions.headEnd = [];
     }
-    else if(headEnd instanceof String) {
-        res.pageContributions.headEnd = [ headEnd ];
+    else if(typeof(headEnd) == 'string') {
+        res.pageContributions.headEnd = [headEnd];
     }
 
     res.pageContributions.headEnd.push(snippet);

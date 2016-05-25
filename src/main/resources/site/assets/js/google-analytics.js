@@ -19,7 +19,7 @@
     var serviceUrl = gaScript.getAttribute('serviceurl');
     var trackingId = gaScript.getAttribute('trackingid');
     var pageId = gaScript.getAttribute('pageid');
-    var uid = gaDocument.baseURI.split('?uid=')[1];
+    var uid = gaDocument.baseURI.split('?uid=')[1].split("&")[0];
     var viewId;
     var dataCharts = [];
 
@@ -380,7 +380,9 @@
         var ca = document.cookie.split(';');
         for (var i = 0; i < ca.length; i++) {
             var c = ca[i].trim();
-            if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
         }
         return "";
     }
@@ -466,6 +468,7 @@
 
     function getContainer(containerId) {
         containerId = containerId + "_" + uid;
+        console.log("getContainer:" + containerId);
         return document.getElementById(containerId) || gaDocument.getElementById(containerId);
     }
 

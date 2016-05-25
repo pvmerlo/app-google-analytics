@@ -1,15 +1,23 @@
-var portal = require('/lib/xp/portal');
+var contentLib = require('/lib/xp/content');
+var portalLib = require('/lib/xp/portal');
 
 exports.responseFilter = function (req, res) {
-    var siteConfig = portal.getSiteConfig();
+    var contentId = req.params.contentid;
+    if (!contentId) {
+        contentId = portalLib.getContent()._id;
+    }
+    var siteConfig = contentLib.getSiteConfig({
+        key: contentId,
+        applicationKey: app.name
+    });
     var trackingID = siteConfig['trackingId'] || '';
     var enableTracking = siteConfig['enableTracking'] || false;
 
-    if(!trackingID || !enableTracking) {
+    if (!trackingID || !enableTracking) {
         return res;
     }
 
-    if(req.mode !== 'live') {
+    if (req.mode !== 'live') {
         return res;
     }
 
@@ -25,10 +33,10 @@ exports.responseFilter = function (req, res) {
     snippet += '<!-- End Google Analytics -->';
 
     var headEnd = res.pageContributions.headEnd;
-    if(!headEnd) {
+    if (!headEnd) {
         res.pageContributions.headEnd = [];
     }
-    else if(typeof(headEnd) == 'string') {
+    else if (typeof(headEnd) == 'string') {
         res.pageContributions.headEnd = [headEnd];
     }
 

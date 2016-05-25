@@ -11,11 +11,8 @@ function handleGet(req) {
     }
 
     var content = contentLib.get({key: contentId});
-    log.info("content: %s", JSON.stringify(content, null, 2));
     var site = contentLib.getSite({key: contentId});
-    log.info("site: %s", JSON.stringify(site, null, 2));
     var siteConfig = contentLib.getSiteConfig({key: contentId, applicationKey: app.name});
-    log.info("siteConfig: %s", JSON.stringify(siteConfig, null, 2));
     var pageId = "";
 
     if (content.type.indexOf(":site") == -1 && !!site) {

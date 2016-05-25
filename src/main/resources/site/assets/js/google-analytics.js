@@ -468,7 +468,6 @@
 
     function getContainer(containerId) {
         containerId = containerId + "_" + uid;
-        console.log("getContainer:" + containerId);
         return document.getElementById(containerId) || gaDocument.getElementById(containerId);
     }
 

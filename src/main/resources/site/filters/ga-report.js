@@ -2,7 +2,7 @@ var contentLib = require('/lib/xp/content');
 var portalLib = require('/lib/xp/portal');
 
 exports.responseFilter = function (req, res) {
-    var contentId = req.params.contentid;
+    var contentId = req.params.contentId;
     if (!contentId) {
         contentId = portalLib.getContent()._id;
     }

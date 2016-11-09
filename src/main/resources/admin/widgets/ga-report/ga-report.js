@@ -27,8 +27,8 @@ function handleGet(req) {
         serviceUrl: '/admin/rest/google-analytics/authenticate',
         trackingId: siteConfig && siteConfig.trackingId ? siteConfig.trackingId : "",
         uid: uid,
-        pageId: pageId
-    }
+        pageId: siteConfig ? pageId : -1
+    };
 
     return {
         contentType: 'text/html',

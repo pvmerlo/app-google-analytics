@@ -50,7 +50,7 @@
             // Query for properties.
             queryProfiles(firstAccountId, trackingId);
         } else {
-            showError('No accounts found for the user.');
+            showError('No GA accounts found for the user.');
         }
     }
 
@@ -91,11 +91,15 @@
                 showStatisticsForSite();
             }
         } else {
-            showError('No views (profiles) found for the user.');
+            showError('No GA views (profiles) found for the account.');
         }
     }
 
     function getToken() {
+        if (pageId == "-1") {
+            showError("GA app not added to the site");
+            return;
+        }
         if (!serviceUrl) {
             showAuthenticationError();
             return;
@@ -499,12 +503,11 @@
     }
 
     function showAuthenticationError(errorMessage) {
-        setContainerVisible('ga-not-authenticated', true).innerHTML = "Authentication failed" + (errorMessage ? ": " + errorMessage : "");
-        setContainerVisible('ga-authenticated', false);
+        showError("Authentication failed" + (errorMessage ? ": " + errorMessage : ""));
     }
 
     function showError(errorMessage) {
-        setContainerVisible('ga-not-authenticated', true).innerHTML = "Error: " + errorMessage;
+        setContainerVisible('ga-not-authenticated', true).innerHTML = errorMessage;
         setContainerVisible('ga-authenticated', false);
     }
 

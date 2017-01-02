@@ -32,7 +32,7 @@ import com.enonic.xp.security.RoleKeys;
 
 @Path("admin/rest/google-analytics")
 @RolesAllowed(RoleKeys.ADMIN_ID)
-@Component(immediate = true, configurationPid = "com.enonic.app.ga")
+@Component(immediate = true, configurationPid = "com.enonic.app.ga", property = "group=admin")
 public class GoogleAnalyticsAuthenticationService
     implements JaxRsComponent
 {

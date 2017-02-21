@@ -1,5 +1,6 @@
 <body>
 <div>
+    <link rel="stylesheet" th:href="${googleAnalyticsCssUrl}" type="text/css"/>
     <div data-th-id="'ga-authenticated_' + ${uid}" th:class="widget-container" hidden="true">
         <div data-th-id="date-range-container" class="date-range-container">
             <span></span>
@@ -15,7 +16,6 @@
     </div>
     <div data-th-id="'ga-not-authenticated_' + ${uid}" th:class="error" hidden="true"></div>
 </div>
+</body>
 <script th:src="${embedApiJsUrl}" type="text/javascript"></script>
 <script th:src="${googleAnalyticsJsUrl}" type="text/javascript" th:attr="serviceurl=${serviceUrl},trackingid=${trackingId},pageid=${pageId}"></script>
-<link rel="stylesheet" th:href="${googleAnalyticsCssUrl}" type="text/css"/>
-</body>

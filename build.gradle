@@ -8,12 +8,14 @@ buildscript {
     }
 
     dependencies {
+        classpath 'com.enonic.gradle:gradle-defaults:1.0.0'
         classpath "com.enonic.xp:gradle-plugin:${xpVersion}"
     }
 }
 
 apply plugin: 'maven'
 apply plugin: 'com.enonic.xp.app'
+apply plugin: 'com.enonic.defaults'
 
 app {
     name = project.appName
@@ -43,15 +45,5 @@ repositories {
     mavenCentral()
     maven {
         url 'http://repo.enonic.com/public'
-    }
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository( url: 'https://repo.enonic.com/public' ) {
-                authentication(userName: findProperty('repoUser'), password: findProperty('repoPassword'))
-            }
-        }
     }
 }

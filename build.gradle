@@ -49,7 +49,9 @@ repositories {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository( url: 'http://repo.enonic.com/artifactory/public' )
+            repository( url: 'https://repo.enonic.com/public' ) {
+                authentication(userName: findProperty('repoUser'), password: findProperty('repoPassword'))
+            }
         }
     }
 }

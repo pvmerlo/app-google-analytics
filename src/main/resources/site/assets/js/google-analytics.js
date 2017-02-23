@@ -42,16 +42,29 @@
         // Handles the response from the accounts list method.
         if (response.result.items && response.result.items.length) {
             // Get the first Google Analytics account.
-            let items = response.result.items.filter(item => (trackingId.indexOf(item.id) > -1));
-            var accountId = items[0].id;
+            let accountId;
+            if (response.result.items.length == 1) {
+                accountId = response.result.items[0];
+            }
+            else {
+                let items = response.result.items.filter(item => (trackingId.indexOf(item.id) > -1));
+                if (items[0]) {
+                    accountId = items[0].id;
+                }
+            }
 
             // Uncomment if we need to show url for selected tracking Id
             //getPropertyUrl(firstAccountId, trackingId);
 
-            // Query for properties.
-            queryProfiles(accountId, trackingId);
+            if (accountId) {
+                // Query for properties.
+                queryProfiles(accountId, trackingId);
+            }
+            else {
+                showError('No accounts found for the GA user.');
+            }
         } else {
-            showError('No GA accounts found for the user.');
+            showError('No accounts found for the GA user.');
         }
     }
 

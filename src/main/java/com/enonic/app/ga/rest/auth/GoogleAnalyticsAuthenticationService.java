@@ -8,11 +8,13 @@ import java.security.PrivateKey;
 import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
+import javax.sound.midi.SysexMessage;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+//import jdk.internal.org.objectweb.asm.tree.analysis.Analyzer;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -30,13 +32,26 @@ import com.google.common.base.Strings;
 import com.enonic.xp.jaxrs.JaxRsComponent;
 import com.enonic.xp.security.RoleKeys;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.analytics.Analytics;
+import com.google.api.services.analytics.model.GaData;
+
+
 @Path("admin/rest/google-analytics")
 @RolesAllowed(RoleKeys.ADMIN_ID)
 @Component(immediate = true, configurationPid = "com.enonic.app.ga", property = "group=admin")
 public class GoogleAnalyticsAuthenticationService
-    implements JaxRsComponent
+        implements JaxRsComponent
 {
     private static final JacksonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+
+    private static final String APPLICATION_NAME = "Enonic XP Google Analytics App";
 
     private static final String GA_SERVICE_ACCOUNT_PROPERTY_KEY = "ga.serviceAccount";
 
@@ -49,6 +64,8 @@ public class GoogleAnalyticsAuthenticationService
     private static final String P12_KEY_ERROR_MSG = "P12 key not found.";
 
     private static final String TOKEN_RETRIEVAL_ERROR_MSG = "Error while retrieving token: ";
+
+    private static final String PROFILE_ID_RETRIVAL_ERROR_MSG = "Error retrieving Account Profile";
 
     private String gaServiceAccount;
 
@@ -73,7 +90,7 @@ public class GoogleAnalyticsAuthenticationService
     @Path("authenticate")
     @Produces(MediaType.APPLICATION_JSON)
     public String authenticate()
-        throws IOException
+            throws IOException
     {
         final GoogleAnalyticsAuthenticationResult googleAnalyticsAuthenticationResult = doAuthenticate();
 
@@ -105,10 +122,17 @@ public class GoogleAnalyticsAuthenticationService
         //Retrieves the token
         String accessToken = null;
         InputStream gaP12KeyInputStream = null;
+        Analytics analytics = null;
+
         try
         {
+
             gaP12KeyInputStream = Files.newInputStream( ga12KeyPath );
-            accessToken = retrieveAccessToken( gaServiceAccount, gaP12KeyInputStream );
+            final HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            final GoogleCredential credential = getGoogleCredential(gaServiceAccount, gaP12KeyInputStream, httpTransport);
+
+            accessToken = retrieveAccessToken( credential );
+            analytics = retrieveAnalytics( credential, httpTransport );
         }
         catch ( TokenResponseException e )
         {
@@ -124,6 +148,7 @@ public class GoogleAnalyticsAuthenticationService
         }
         catch ( Exception e )
         {
+            System.out.println(e.getMessage());
             return error( TOKEN_RETRIEVAL_ERROR_MSG + e.getMessage() );
         }
         finally
@@ -141,36 +166,23 @@ public class GoogleAnalyticsAuthenticationService
             }
         }
 
-        return success( accessToken );
+        return success( accessToken, analytics );
     }
 
-    private static GoogleAnalyticsAuthenticationResult success( String accessToken )
+    private static GoogleAnalyticsAuthenticationResult success( String accessToken, Analytics analytics )
     {
-        return new GoogleAnalyticsAuthenticationResult( accessToken, null );
+        return new GoogleAnalyticsAuthenticationResult( accessToken, null, analytics );
     }
 
     private static GoogleAnalyticsAuthenticationResult error( String errorMessage )
     {
-        return new GoogleAnalyticsAuthenticationResult( null, errorMessage );
+        return new GoogleAnalyticsAuthenticationResult( null, errorMessage, null );
     }
 
-    private String retrieveAccessToken( final String serviceAccount, final InputStream p12InputStream )
-        throws Exception
+    private String retrieveAccessToken( final GoogleCredential credential)
+            throws Exception
     {
         String accessToken = null;
-
-        final HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        final PrivateKey privateKey =
-            SecurityUtils.loadPrivateKeyFromKeyStore( SecurityUtils.getPkcs12KeyStore(), p12InputStream, "notasecret", "privatekey",
-                                                      "notasecret" );
-
-        final GoogleCredential credential = new GoogleCredential.Builder().
-            setTransport( httpTransport ).
-            setJsonFactory( JSON_FACTORY ).
-            setServiceAccountId( serviceAccount ).
-            setServiceAccountPrivateKey( privateKey ).
-            setServiceAccountScopes( AnalyticsScopes.all() ).
-            build();
 
         if ( credential.refreshToken() )
         {
@@ -180,4 +192,59 @@ public class GoogleAnalyticsAuthenticationService
         return accessToken;
     }
 
+    private Analytics retrieveAnalytics( final GoogleCredential credential, final HttpTransport httpTransport )
+            throws Exception
+    {
+        return new Analytics.Builder(httpTransport, JSON_FACTORY, credential)
+                .setApplicationName(APPLICATION_NAME).build();
+    }
+
+    private GoogleCredential getGoogleCredential( final String serviceAccount, final InputStream p12InputStream, final HttpTransport httpTransport )
+            throws Exception
+    {
+        final PrivateKey privateKey =
+                SecurityUtils.loadPrivateKeyFromKeyStore( SecurityUtils.getPkcs12KeyStore(), p12InputStream, "notasecret", "privatekey",
+                        "notasecret" );
+
+        final GoogleCredential credential = new GoogleCredential.Builder().
+                setTransport( httpTransport ).
+                setJsonFactory( JSON_FACTORY ).
+                setServiceAccountId( serviceAccount ).
+                setServiceAccountPrivateKey( privateKey ).
+                setServiceAccountScopes( AnalyticsScopes.all() ).
+                build();
+
+        return credential;
+    }
+
+    @GET
+    @Path("/reports/{startDate}/{endDate}/{metrics}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getResults(@PathParam("startDate") String startDate, @PathParam("endDate") String endDate,
+                             @PathParam("metrics") String metrics,
+                             @DefaultValue("ga:pageTitle,ga:pagePath") @QueryParam("dimensions") String dimensions,
+                             @DefaultValue("-ga:pageviews") @QueryParam("sort") String sort,
+                             @DefaultValue("ga:pagePath=~/Nyheter/,ga:pagePath=~/Nyheiter/") @QueryParam("filters") String filters)
+            throws Exception {
+        final GoogleAnalyticsAuthenticationResult googleAnalyticsAuthenticationResult = doAuthenticate();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        //Prepares the authentication result
+        String profile = googleAnalyticsAuthenticationResult.getAnalyticsProfile();
+
+        dimensions = URLDecoder.decode(dimensions, "UTF-8");
+        filters = URLDecoder.decode(filters, "UTF-8");
+        sort = URLDecoder.decode(sort, "UTF-8");
+
+        GaData data = googleAnalyticsAuthenticationResult.getAnalytics().data().ga()
+                .get("ga:" + profile, startDate, endDate, metrics)
+                .setDimensions(dimensions)
+                .setSort(sort)
+                .setFilters(filters)
+                .setMaxResults(100)
+                .execute();
+
+        return mapper.writeValueAsString(data);
+    }
 }

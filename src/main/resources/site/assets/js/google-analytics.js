@@ -39,12 +39,13 @@
     }
 
     function handleAccounts(response) {
+        console.log(JSON.stringify(response, null, 3));
         // Handles the response from the accounts list method.
         if (response.result.items && response.result.items.length) {
             // Get the first Google Analytics account.
             let accountId;
             if (response.result.items.length == 1) {
-                accountId = response.result.items[0];
+                accountId = response.result.items[0].id;
             }
             else {
                 let items = response.result.items.filter(item => (trackingId.indexOf(item.id) > -1));
